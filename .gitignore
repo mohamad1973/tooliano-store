@@ -33,6 +33,9 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# nested repo for env backup (see tolliano/)
+/tolliano/
+
 # vercel
 .vercel
 
