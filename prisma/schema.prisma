@@ -72,6 +72,7 @@ model ProductSubmission {
   campaignEndsAt            DateTime?
   reservedQuantity          Int       @default(0)
   publishedOnStore          Boolean   @default(false)
+  adminHidden               Boolean   @default(false)
   wooSyncStatus             String    @default("none")
   wooSyncError              String?
   idempotencyKey            String?   @unique

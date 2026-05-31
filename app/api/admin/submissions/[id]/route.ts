@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { adminDeleteProductSubmission } from "@/lib/admin-delete-submission";
 import { adminUpdateSubmissionContent } from "@/lib/admin-update-submission";
 import { approveProductSubmission } from "@/lib/admin-approve-submission";
 import { getSession } from "@/lib/auth/session";
@@ -132,21 +133,11 @@ export async function DELETE(_request: Request, { params }: Params) {
   }
 
   const { id } = await params;
-  const submission = await prisma.productSubmission.findUnique({
-    where: { id },
-  });
-
-  if (!submission) {
-    return NextResponse.json({ error: "غير موجود" }, { status: 404 });
+  const result = await adminDeleteProductSubmission(id);
+  if (!result.ok) {
+    const status = result.error.includes("غير موجود") ? 404 : 400;
+    return NextResponse.json({ error: result.error }, { status });
   }
 
-  if (submission.status !== APPROVAL_STATUS.REJECTED) {
-    return NextResponse.json(
-      { error: "يمكن حذف الطلبات المرفوضة فقط" },
-      { status: 400 },
-    );
-  }
-
-  await prisma.productSubmission.delete({ where: { id } });
   return NextResponse.json({ ok: true });
 }

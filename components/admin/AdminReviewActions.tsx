@@ -111,43 +111,50 @@ export function AdminReviewActions({
     }
   }
 
-  async function deleteRejected() {
-    if (
-      !window.confirm(
-        kind === "submission"
-          ? "حذف هذا الطلب المرفوض نهائياً من اللوحة؟"
-          : "حذف ملف التاجر المرفوض ومنتجاته من اللوحة؟",
-      )
-    ) {
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(patchEndpoint, { method: "DELETE" });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error ?? "فشل الحذف");
-        return;
-      }
-      router.refresh();
-    } catch {
-      setError("تعذر الاتصال بالخادم");
-    } finally {
-      setLoading(false);
-    }
+  if (currentStatus === APPROVAL_STATUS.REJECTED && kind === "submission") {
+    return (
+      <div className="mt-3 border-t border-brand-gray pt-3">
+        <p className="text-xs text-brand-navy/60">
+          لمسح المنتج نهائياً استخدم زر «مسح نهائياً» أعلاه.
+        </p>
+        {error ? <p className="mt-2 text-xs text-red-600">{error}</p> : null}
+      </div>
+    );
   }
 
-  if (currentStatus === APPROVAL_STATUS.REJECTED) {
+  if (currentStatus === APPROVAL_STATUS.REJECTED && kind === "vendor") {
     return (
       <div className="mt-3 border-t border-brand-gray pt-3">
         <button
           type="button"
           disabled={loading}
-          onClick={deleteRejected}
+          onClick={async () => {
+            if (
+              !window.confirm(
+                "حذف ملف التاجر المرفوض ومنتجاته من اللوحة؟",
+              )
+            ) {
+              return;
+            }
+            setLoading(true);
+            setError(null);
+            try {
+              const res = await fetch(patchEndpoint, { method: "DELETE" });
+              const data = await res.json();
+              if (!res.ok) {
+                setError(data.error ?? "فشل الحذف");
+                return;
+              }
+              router.refresh();
+            } catch {
+              setError("تعذر الاتصال بالخادم");
+            } finally {
+              setLoading(false);
+            }
+          }}
           className="rounded-lg border border-red-300 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100 disabled:opacity-60"
         >
-          حذف الطلب من اللوحة
+          حذف ملف التاجر
         </button>
         {error ? <p className="mt-2 text-xs text-red-600">{error}</p> : null}
       </div>

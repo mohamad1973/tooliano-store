@@ -1,17 +1,9 @@
 import Link from "next/link";
-import { AdminSubmissionEditForm } from "@/components/admin/AdminSubmissionEditForm";
+import { AdminOperationsProductTabs } from "@/components/admin/AdminOperationsProductTabs";
 import { AdminReviewActions } from "@/components/admin/AdminReviewActions";
-import { AdminSubmissionImagePreview } from "@/components/admin/AdminSubmissionImagePreview";
+import { AdminSubmissionCard } from "@/components/admin/AdminSubmissionCard";
 import { PersistProductImagesPanel } from "@/components/admin/PersistProductImagesPanel";
-import { getSubmissionImageUrlForAdmin } from "@/lib/submission-image-persist";
-import { AdminSubmissionSpecsSummary } from "@/components/admin/AdminSubmissionSpecsSummary";
 import { AdminShell } from "@/components/admin/AdminShell";
-import {
-  productConditionBadgeClass,
-  productConditionLabel,
-} from "@/lib/product-condition-labels";
-import { APPROVAL_STATUS } from "@/lib/db/constants";
-import { isWordPressMediaUploadConfigured } from "@/lib/wp-media-config";
 import { requireAdmin } from "@/lib/auth/guards";
 import {
   approvalStatusClass,
@@ -19,25 +11,32 @@ import {
   businessTypeLabel,
 } from "@/lib/approval-labels";
 import { prisma } from "@/lib/db/prisma";
+import { isWordPressMediaUploadConfigured } from "@/lib/wp-media-config";
 
 export const metadata = { title: "عمليات الإدارة" };
 
-export default async function AdminOperationsPage() {
-  const session = await requireAdmin();
+const submissionInclude = {
+  vendor: { select: { username: true } },
+} as const;
 
-  const [vendors, submissions] = await Promise.all([
+export default async function AdminOperationsPage() {
+  await requireAdmin();
+
+  const [vendors, activeSubmissions, hiddenCount] = await Promise.all([
     prisma.vendorProfile.findMany({
       include: { user: { select: { username: true, id: true, createdAt: true } } },
       orderBy: { createdAt: "desc" },
     }),
     prisma.productSubmission.findMany({
-      include: { vendor: { select: { username: true } } },
+      where: { adminHidden: false },
+      include: submissionInclude,
       orderBy: { createdAt: "desc" },
     }),
+    prisma.productSubmission.count({ where: { adminHidden: true } }),
   ]);
 
   const pendingVendors = vendors.filter((v) => v.status === "PENDING").length;
-  const pendingProducts = submissions.filter((s) => s.status === "PENDING")
+  const pendingProducts = activeSubmissions.filter((s) => s.status === "PENDING")
     .length;
 
   const wpMediaConfigured = isWordPressMediaUploadConfigured();
@@ -106,69 +105,29 @@ export default async function AdminOperationsPage() {
       </section>
 
       <section>
-        <h2 className="mb-4 text-lg font-bold text-brand-navy">
-          طلبات المنتجات ({submissions.length})
+        <h2 className="mb-2 text-lg font-bold text-brand-navy">
+          طلبات المنتجات
         </h2>
-        <div className="grid gap-4 lg:grid-cols-2">
-          {submissions.map((item) => (
-            <article
-              key={item.id}
-              className="rounded-2xl border border-brand-gray bg-brand-white p-4"
-            >
-              <h3 className="font-bold text-brand-navy">{item.productName}</h3>
-              <p className="text-xs text-brand-navy/60">@{item.vendor.username}</p>
-              <AdminSubmissionSpecsSummary
-                productCondition={item.productCondition}
-                productType={item.productType}
-                specWatts={item.specWatts}
-                specVoltage={item.specVoltage}
-                specCapacity={item.specCapacity}
-                specPower={item.specPower}
-                specColor={item.specColor}
-                specExtra={item.specExtra}
-                outletReason={item.outletReason}
-                productDescription={item.productDescription}
-              />
-              <p className="mt-2 text-xs text-brand-navy/60">
-                كمية: {item.suggestedQuantity}
-                {item.suggestedGroupPrice != null
-                  ? ` · جماعي ${item.suggestedGroupPrice}`
-                  : ""}
-                {item.vendorSettlementUnitPrice != null
-                  ? ` · تسوية تاجر ${item.vendorSettlementUnitPrice}`
-                  : ""}
-              </p>
-              {item.productImageUrl ? (
-                <AdminSubmissionImagePreview
-                  url={item.productImageUrl}
-                  displaySrc={getSubmissionImageUrlForAdmin(item.productImageUrl)}
-                  alt={item.productName}
-                />
-              ) : null}
-              {item.status === APPROVAL_STATUS.APPROVED && item.campaignEndsAt ? (
-                <p className="mt-2 text-xs text-emerald-800">
-                  <Link
-                    href={`/campaign/offer/${item.id}`}
-                    className="font-semibold text-brand-gold hover:underline"
-                  >
-                    معاينة العرض
-                  </Link>
-                </p>
-              ) : null}
-              <AdminSubmissionEditForm submission={item} />
-              <AdminReviewActions
-                kind="submission"
-                id={item.id}
-                currentStatus={item.status}
-                wooProductId={item.wooProductId}
-                wooSyncStatus={item.wooSyncStatus}
-                wooSyncError={item.wooSyncError}
-                publishedOnStore={item.publishedOnStore}
+        <AdminOperationsProductTabs
+          activeCount={activeSubmissions.length}
+          hiddenCount={hiddenCount}
+        />
+        {activeSubmissions.length === 0 ? (
+          <p className="rounded-xl border border-brand-gray bg-brand-white p-6 text-sm text-brand-navy/70">
+            لا توجد منتجات في القائمة النشطة. راجع «المنتجات المخفية» إن كنت
+            أخفيت منتجاتاً سابقاً.
+          </p>
+        ) : (
+          <div className="grid gap-4 lg:grid-cols-2">
+            {activeSubmissions.map((item) => (
+              <AdminSubmissionCard
+                key={item.id}
+                item={item}
                 wpMediaConfigured={wpMediaConfigured}
               />
-            </article>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </section>
     </AdminShell>
   );
