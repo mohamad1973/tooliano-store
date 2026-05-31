@@ -22,7 +22,9 @@ export async function POST(request: Request, { params }: Params) {
   }
 
   try {
-    const result = await handleVendorImageUploadRequest(request);
+    const result = await handleVendorImageUploadRequest(request, {
+      forceWordPress: true,
+    });
     return NextResponse.json({ ok: true, ...result });
   } catch (e) {
     console.error("POST admin upload-image:", e);

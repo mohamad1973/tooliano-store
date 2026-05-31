@@ -74,12 +74,12 @@ export function assertVendorImageUploadReady(
 
   if (isEphemeralServerRuntime()) {
     throw new Error(
-      "على Vercel لا يُحفظ الملف على القرص — أضف WP_MEDIA_USER و WP_APP_PASSWORD في إعدادات المشروع على Vercel (راجع docs/WORDPRESS-MEDIA-SETUP.md)",
+      "على Vercel لا يُحفظ الملف على القرص — أضف WP_URL و WP_USERNAME و WP_APP_PASSWORD في Vercel (راجع docs/WORDPRESS-MEDIA-SETUP.md)",
     );
   }
 
   throw new Error(
-    "إعدادات WordPress Media غير مكتملة — راجع WP_MEDIA_USER و WP_APP_PASSWORD",
+    "إعدادات WordPress Media غير مكتملة — راجع WP_URL و WP_USERNAME و WP_APP_PASSWORD",
   );
 }
 

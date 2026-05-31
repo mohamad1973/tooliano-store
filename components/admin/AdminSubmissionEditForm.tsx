@@ -131,7 +131,7 @@ export function AdminSubmissionEditForm({
             suggestedGroupPrice: submission.suggestedGroupPrice,
             productImageUrl: submission.productImageUrl,
           }}
-          imageUploadEndpoint={`/api/admin/submissions/${submission.id}/upload-image`}
+          imageUploadEndpoint="/api/upload"
           onImageUploadStateChange={setImageUploading}
         />
 

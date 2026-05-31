@@ -22,7 +22,7 @@ export async function uploadToWordPressMedia(input: {
   const creds = getWpMediaCredentials();
   if (!creds) {
     throw new Error(
-      "أضف WP_MEDIA_USER و WP_APP_PASSWORD في .env.local لرفع الصور إلى WordPress",
+      "أضف WP_URL و WP_USERNAME و WP_APP_PASSWORD (أو WC_BASE_URL و WP_MEDIA_USER) في Vercel — راجع docs/WORDPRESS-MEDIA-SETUP.md",
     );
   }
 

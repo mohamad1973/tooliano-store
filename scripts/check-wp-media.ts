@@ -4,6 +4,10 @@
  */
 import { existsSync, readFileSync } from "fs";
 import path from "path";
+import {
+  resolveWordPressBaseUrl,
+  resolveWordPressMediaUsername,
+} from "../lib/wp-media-config-shared";
 
 function loadEnvLocal() {
   const envPath = path.join(process.cwd(), ".env.local");
@@ -32,25 +36,23 @@ function loadEnvLocal() {
 async function main() {
   loadEnvLocal();
 
-  const baseURL = process.env.WC_BASE_URL?.replace(/\/$/, "");
-  const user = (
-    process.env.WP_MEDIA_USER ?? process.env.WP_MEDIA_USERNAME ?? ""
-  ).trim();
+  const baseURL = resolveWordPressBaseUrl();
+  const user = resolveWordPressMediaUsername();
 
   console.log("=== فحص إعداد WordPress Media ===\n");
 
   if (!baseURL) {
-    console.error("❌ WC_BASE_URL غير مضبوط في .env.local");
+    console.error("❌ WP_URL أو WC_BASE_URL غير مضبوط في .env.local");
     process.exit(1);
   }
-  console.log(`✓ WC_BASE_URL = ${baseURL}`);
+  console.log(`✓ WP_URL = ${baseURL}`);
 
   if (!user || !process.env.WP_APP_PASSWORD?.trim()) {
-    console.error("\n❌ WP_MEDIA_USER أو WP_APP_PASSWORD غير مضبوطين");
+    console.error("\n❌ WP_USERNAME (أو WP_MEDIA_USER) أو WP_APP_PASSWORD غير مضبوطين");
     console.error("   راجع: docs/WORDPRESS-MEDIA-SETUP.md");
     process.exit(1);
   }
-  console.log(`✓ WP_MEDIA_USER = ${user}`);
+  console.log(`✓ WP_USERNAME = ${user}`);
   console.log("✓ WP_APP_PASSWORD = (مضبوط)\n");
 
   const { getWordPressMediaFullStatus } = await import(
@@ -61,7 +63,7 @@ async function main() {
   if (status.authOk && status.canUploadMedia) {
     console.log(`✅ ${status.message}`);
     console.log(
-      "\nيمكنك رفع الصور من الأدمن (وسائط WP) ثم «نشر على WordPress» للمنتج.",
+      "\nيمكنك رفع الصور عبر POST /api/upload من لوحة التاجر أو الأدمن.",
     );
     process.exit(0);
   }

@@ -16,7 +16,7 @@ export async function GET() {
       configured: false,
       verified: false,
       message:
-        "أضف WP_MEDIA_USER و WP_APP_PASSWORD في .env.local — راجع docs/WORDPRESS-MEDIA-SETUP.md",
+        "أضف WP_URL و WP_USERNAME و WP_APP_PASSWORD — راجع docs/WORDPRESS-MEDIA-SETUP.md",
     });
   }
 

@@ -26,7 +26,7 @@ export async function getWordPressMediaFullStatus(): Promise<WpMediaFullStatus> 
       authOk: false,
       canUploadMedia: false,
       message:
-        "أضف WP_MEDIA_USER و WP_APP_PASSWORD في .env.local أو Vercel — راجع docs/WORDPRESS-MEDIA-SETUP.md",
+        "أضف WP_URL و WP_USERNAME و WP_APP_PASSWORD في .env.local أو Vercel — راجع docs/WORDPRESS-MEDIA-SETUP.md",
     };
   }
 

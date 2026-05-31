@@ -17,7 +17,7 @@ function normalizeUploadedUrl(url: string): string {
 type Props = {
   defaultUrl?: string | null;
   name?: string;
-  /** مسار الرفع — للتسجيل استخدم /api/register/vendor-upload-image */
+  /** مسار الرفع — افتراضي /api/upload؛ للتسجيل /api/register/vendor-upload-image */
   uploadEndpoint?: string;
   onUploadStateChange?: (uploading: boolean) => void;
 };
@@ -25,7 +25,7 @@ type Props = {
 export function VendorProductImageField({
   defaultUrl = "",
   name = "productImageUrl",
-  uploadEndpoint = "/api/vendor/upload-image",
+  uploadEndpoint = "/api/upload",
   onUploadStateChange,
 }: Props) {
   const initial = normalizeUploadedUrl((defaultUrl ?? "").trim());

@@ -1,62 +1,56 @@
-# إعداد نشر صور المنتج على WordPress
+# إعداد رفع صور المنتج على WordPress
 
-عند ظهور الرسالة:
-
-> صورة المنتج محفوظة محلياً — أضف WP_MEDIA_USER و WP_APP_PASSWORD في .env.local
-
-- **تطوير محلي (`npm run dev`):** الصور في `public/uploads/vendors/`.
-- **Vercel / الإنتاج:** رفع الصورة من النموذج → **وسائط WordPress** فقط (`WP_MEDIA_USER` + `WP_APP_PASSWORD` = Application Password).
-- **نشر المنتج:** زر «نشر على WordPress» → **WooCommerce** (`WC_CONSUMER_KEY` / `WC_CONSUMER_SECRET`).
-- التحقق: `npm run check:wp-media` (دخول + رفع تجريبي).
+مسار الرفع الموحد: **`POST /api/upload`** (تاجر أو أدمن مسجّل دخول) → **وسائط WordPress** → رابط `source_url`.
 
 ## 1) إنشاء Application Password
 
 1. ادخل [https://tooliano.com/wp-admin](https://tooliano.com/wp-admin) بحساب **مدير**.
-2. **المستخدمون** → **الملف الشخصي**.
-3. قسم **Application Passwords** → اسم التطبيق: `Tooliano Store` → **Add New**.
-4. انسخ كلمة المرور فوراً (تظهر مرة واحدة).
+2. **المستخدمون** → المستخدم → **الملف الشخصي**.
+3. **Application Passwords** → اسم التطبيق: `Tooliano Store` → **Add New**.
+4. انسخ كلمة المرور فوراً (مرة واحدة).
 
-## 2) تعديل `.env.local`
+## 2) متغيرات البيئة
 
-في جذر المشروع `d:\tooliano-store\.env.local`:
+في `.env.local` محلياً وفي **Vercel → Environment Variables**:
 
 ```env
+WP_URL=https://tooliano.com
+WP_USERNAME=اسم_الدخول_Username
+WP_APP_PASSWORD=xxxx xxxx xxxx xxxx
+
 WC_BASE_URL=https://tooliano.com
 WC_CONSUMER_KEY=ck_...
 WC_CONSUMER_SECRET=cs_...
-
-WP_MEDIA_USER=اسم_الدخول_في_ووردبريس
-WP_APP_PASSWORD=الصق Application Password هنا
 ```
 
-- `WP_MEDIA_USER` = اسم الدخول (مثل `admin`) وليس البريد.
-- يمكن لصق كلمة التطبيق **مع المسافات** — التطبيق يزيلها تلقائياً.
+**أسماء بديلة مدعومة:** `WC_BASE_URL` بدل `WP_URL`، `WP_MEDIA_USER` بدل `WP_USERNAME`.
 
-أوامر مساعدة:
+- `WP_USERNAME` = **Username** في ووردبريس (وليس البريد ولا اسم التطبيق).
+- `WP_APP_PASSWORD` = Application Password فقط (ليس كلمة دخول wp-admin).
+- يمكن لصق كلمة التطبيق **مع مسافات**.
 
-```bash
-npm run setup:wp-env    # يضيف قالباً في .env.local إن لم يكن موجوداً
-npm run check:wp-media  # يتحقق من الاتصال بـ WordPress
-```
-
-## 3) إعادة تشغيل السيرفر
+## 3) التحقق
 
 ```bash
-# أوقف npm run dev ثم:
+npm run check:wp-media
 npm run dev
 ```
 
-## 4) النشر من لوحة الأدمن
+## 4) الاستخدام
 
-`/admin` → منتج موافق عليه → **نشر على WordPress**.
+| من | المسار |
+|----|--------|
+| تاجر | `/vendor` → رفع صورة → `/api/upload` |
+| أدمن | `/admin/operations` → تعديل منتج → `/api/upload` |
+| تسجيل تاجر | `/api/register/vendor-upload-image` (بدون جلسة) |
 
-عند النجاح: يظهر `منشور على WordPress #...` والصورة في **وسائط** WordPress.
+**نشر المنتج على WooCommerce:** زر منفصل — `WC_CONSUMER_KEY` / `WC_CONSUMER_SECRET`.
 
 ## استكشاف الأخطاء
 
 | المشكلة | الحل |
 |---------|------|
-| `401` / `403` | راجع اسم المستخدم و Application Password |
-| «غير مسموح لك بإنشاء مقالات» | المستخدم يجب أن يكون **مدير** أو **محرر** بصلاحية رفع الوسائط |
-| `ملف الصورة غير موجود` | اطلب من التاجر إعادة رفع الصورة |
-| `فشل رفع الصورة إلى WordPress` | تأكد أن المستخدم لديه صلاحية رفع ملفات |
+| `401` / `403` | راجع `WP_USERNAME` و Application Password |
+| «غير مسموح لك بإنشاء مقالات» | حساب **Administrator** + Application Password جديد |
+| فشل على Vercel فقط | Redeploy بعد تعديل المتغيرات |
+| `check:wp-media` ينجح والرفع يفشل | تأكد أن النشر الأخير على Vercel محدّث |
