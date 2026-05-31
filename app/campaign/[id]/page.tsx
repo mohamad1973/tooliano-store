@@ -2,14 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { SiteHeader } from "@/components/SiteHeader";
-import { CampaignFaq } from "@/components/landing/CampaignFaq";
+import { CampaignLandingBlocks } from "@/components/landing/CampaignLandingBlocks";
 import { CountdownTimer } from "@/components/landing/CountdownTimer";
-import { HowItWorks } from "@/components/landing/HowItWorks";
 import { PriceComparison } from "@/components/landing/PriceComparison";
 import { ProductGallery } from "@/components/landing/ProductGallery";
 import { QuantityProgress } from "@/components/landing/QuantityProgress";
 import { StickyReserveBar } from "@/components/landing/StickyReserveBar";
-import { WalletPolicySection } from "@/components/landing/WalletPolicySection";
 import { WhyGroupBuy } from "@/components/landing/WhyGroupBuy";
 import { getCampaignConfig } from "@/lib/campaign-config";
 import { formatCurrency } from "@/lib/format";
@@ -144,8 +142,7 @@ export default async function CampaignLandingPage({ params }: Props) {
       ) : null}
 
       <WhyGroupBuy />
-      <HowItWorks />
-      <WalletPolicySection />
+      <CampaignLandingBlocks />
 
       {/* تفاصيل المنتج */}
       {product.descriptionHtml ? (
@@ -166,8 +163,6 @@ export default async function CampaignLandingPage({ params }: Props) {
           </div>
         </section>
       ) : null}
-
-      <CampaignFaq />
 
       <section className="bg-brand-gray/40 py-8 pb-24 md:pb-8">
         <div className="mx-auto flex max-w-6xl flex-wrap justify-center gap-4 px-4">

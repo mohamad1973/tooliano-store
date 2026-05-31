@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { seedCms } from "./seed-cms";
 
 const prisma = new PrismaClient();
 
@@ -51,6 +52,8 @@ async function main() {
     });
     console.log("Delivery agent created:", agentUsername);
   }
+
+  await seedCms(prisma);
 }
 
 main()

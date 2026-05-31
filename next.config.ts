@@ -6,7 +6,12 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "tooliano.com",
-        pathname: "/wp-content/uploads/**",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "**.vercel.app",
+        pathname: "/**",
       },
       {
         protocol: "http",

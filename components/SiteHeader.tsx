@@ -1,11 +1,17 @@
+import Image from "next/image";
 import Link from "next/link";
 import { fetchProductCategories } from "@/lib/categories";
-import { SITE_NAME } from "@/lib/constants";
+import { getSiteSettings, isMarqueeEnabled } from "@/lib/cms/get-site-content";
 import { HeaderCategoryNav } from "@/components/HeaderCategoryNav";
 import { HeaderIconsSocial } from "@/components/HeaderIconsSocial";
 import { TopMarquee } from "@/components/TopMarquee";
 
 export async function SiteHeader() {
+  const [settings, showMarquee] = await Promise.all([
+    getSiteSettings(),
+    isMarqueeEnabled(),
+  ]);
+
   let categories: Awaited<ReturnType<typeof fetchProductCategories>> = [];
   try {
     categories = await fetchProductCategories();
@@ -15,20 +21,33 @@ export async function SiteHeader() {
 
   return (
     <div className="sticky top-0 z-50 shadow-[0_4px_24px_-8px_rgba(20,33,61,0.2)]">
-      <TopMarquee />
+      {showMarquee ? <TopMarquee /> : null}
       <header className="border-b border-brand-gray bg-brand-white backdrop-blur-md">
         <div className="mx-auto max-w-6xl px-2 py-2 sm:px-3 sm:py-2.5">
           <div className="flex items-center gap-2 sm:gap-3">
             <div className="shrink-0">
               <Link
                 href="/"
-                className="group flex flex-col leading-tight transition hover:opacity-90"
+                className="group flex items-center gap-2 leading-tight transition hover:opacity-90"
               >
-                <span className="text-lg font-bold text-brand-navy sm:text-xl">
-                  {SITE_NAME}
-                </span>
-                <span className="text-[10px] font-medium text-brand-navy/60 sm:text-xs">
-                  أدوات المنزل العصرية
+                {settings.logoUrl ? (
+                  <Image
+                    src={settings.logoUrl}
+                    alt={settings.siteName}
+                    width={40}
+                    height={40}
+                    className="h-9 w-9 rounded-lg object-contain sm:h-10 sm:w-10"
+                  />
+                ) : null}
+                <span className="flex flex-col">
+                  <span className="text-lg font-bold text-brand-navy sm:text-xl">
+                    {settings.siteName}
+                  </span>
+                  {settings.tagline ? (
+                    <span className="text-[10px] font-medium text-brand-navy/60 sm:text-xs">
+                      {settings.tagline}
+                    </span>
+                  ) : null}
                 </span>
               </Link>
             </div>

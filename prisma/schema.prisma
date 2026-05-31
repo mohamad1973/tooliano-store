@@ -202,3 +202,68 @@ model AdminAuditLog {
 
   @@index([createdAt])
 }
+
+// ——— CMS (مرحلة ٢ — واجهة المتجر) ———
+
+model SiteSetting {
+  key   String @id
+  value String @db.Text
+}
+
+model MarqueeItem {
+  id        String   @id @default(cuid())
+  text      String
+  sortOrder Int      @default(0)
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model HomeBanner {
+  id           String   @id @default(cuid())
+  imageUrl     String
+  categorySlug String?
+  title        String?
+  sortOrder    Int      @default(0)
+  enabled      Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model HomeSection {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  label     String
+  sortOrder Int      @default(0)
+  visible   Boolean  @default(true)
+  updatedAt DateTime @updatedAt
+}
+
+model ContentBlock {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  title     String
+  body      String   @db.Text
+  updatedAt DateTime @updatedAt
+}
+
+model FooterColumn {
+  id        String       @id @default(cuid())
+  title     String
+  sortOrder Int          @default(0)
+  links     FooterLink[]
+  updatedAt DateTime     @updatedAt
+}
+
+model FooterLink {
+  id        String       @id @default(cuid())
+  columnId  String
+  column    FooterColumn @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  label     String
+  href      String
+  sortOrder Int          @default(0)
+  external  Boolean      @default(false)
+  updatedAt DateTime     @updatedAt
+
+  @@index([columnId, sortOrder])
+}

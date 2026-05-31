@@ -1,45 +1,23 @@
 "use client";
 
 import { useState } from "react";
+import type { FaqContent } from "@/lib/cms/types";
 
-const FAQ = [
-  {
-    q: "متى أدفع السعر الجماعي؟",
-    a: "تدفع مقدماً عند الحجز. إذا اكتملت الحملة بالكمية والوقت المحددين، يُطبَّق السعر الجماعي على طلبك. إن لم تكتمل، تُطبَّق سياسة المحفظة.",
-  },
-  {
-    q: "هل يمكنني إلغاء الحجز؟",
-    a: "سياسة الإلغاء ستُعرض بوضوح قبل تأكيد الحجز. في النسخة الحالية الحجز تجريبي (قريباً).",
-  },
-  {
-    q: "ماذا تعني «48 ساعة عمل»؟",
-    a: "أيام العمل الرسمية للمنصة (عادةً من الأحد إلى الخميس، باستثناء العطلات). خلالها يمكنك اختيار الاسترداد أو استخدام الرصيد.",
-  },
-  {
-    q: "هل الشحن مشمول؟",
-    a: "تفاصيل الشحن تُحدَّد لكل حملة وستظهر عند تفعيل الحجز والدفع.",
-  },
-  {
-    q: "كيف أتابع حالة الحملة؟",
-    a: "من هذه الصفحة: شريط التقدم يوضح المحجوز والمتبقي، والعداد يوضح الوقت المتبقي.",
-  },
-] as const;
-
-export function CampaignFaq() {
+export function CampaignFaq({ content }: { content: FaqContent }) {
   const [open, setOpen] = useState<number | null>(0);
 
   return (
     <section className="py-12 sm:py-16" id="faq">
       <div className="mx-auto max-w-3xl px-4">
         <h2 className="text-center text-2xl font-bold text-brand-navy sm:text-3xl">
-          أسئلة شائعة
+          {content.title}
         </h2>
         <ul className="mt-8 flex flex-col gap-2">
-          {FAQ.map((item, i) => {
+          {content.items.map((item, i) => {
             const isOpen = open === i;
             return (
               <li
-                key={item.q}
+                key={`${item.q}-${i}`}
                 className="overflow-hidden rounded-xl border border-brand-gray bg-brand-white"
               >
                 <button

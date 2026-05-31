@@ -33,7 +33,6 @@ export function AdminShell({
                 {item.description ? (
                   <span className="mt-0.5 block text-xs text-brand-white/60">
                     {item.description}
-                    {item.phase === 2 ? " · قريباً" : ""}
                   </span>
                 ) : null}
               </Link>

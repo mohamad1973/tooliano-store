@@ -1,21 +1,64 @@
+import Link from "next/link";
+import { AdminContentSubnav } from "@/components/admin/cms/AdminContentSubnav";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { requireAdmin } from "@/lib/auth/guards";
 
+const SECTIONS = [
+  {
+    href: "/admin/content/header",
+    title: "الهيدر والشعار",
+    desc: "اسم الموقع، الشعار الفرعي، صورة الشعار، إظهار الماركوي",
+  },
+  {
+    href: "/admin/content/marquee",
+    title: "الشريط المتحرك",
+    desc: "عبارات أعلى الموقع",
+  },
+  {
+    href: "/admin/content/banners",
+    title: "بنرات التصنيفات",
+    desc: "صور الصفحة الرئيسية وربطها بتصنيفات WooCommerce",
+  },
+  {
+    href: "/admin/content/home",
+    title: "الصفحة الرئيسية",
+    desc: "ترتيب وإظهار أقسام الصفحة",
+  },
+  {
+    href: "/admin/content/footer",
+    title: "الفوتر",
+    desc: "أعمدة وروابط أسفل الموقع",
+  },
+  {
+    href: "/admin/content/campaign",
+    title: "صفحات الحملة",
+    desc: "FAQ، كيف يعمل، سياسة المحفظة",
+  },
+] as const;
+
 export const metadata = { title: "محتوى الموقع" };
 
-export default async function AdminContentPlaceholderPage() {
+export default async function AdminContentIndexPage() {
   await requireAdmin();
 
   return (
     <AdminShell
       title="محتوى الموقع"
-      subtitle="المرحلة ٢ — تحرير الهيدر والبنرات والفوتر"
+      subtitle="تحرير واجهة المتجر — الهيدر، البنرات، الفوتر، ونصوص الحملة"
     >
-      <p className="rounded-xl border border-dashed border-brand-gold bg-brand-gold/10 p-6 text-sm text-brand-navy">
-        هذا القسم مُجهَّز في القائمة الجانبية للمرحلة القادمة: ماركوي، شعار، بنرات، أقسام
-        الصفحة الرئيسية، فوتر، ونصوص الحملة. راجع{" "}
-        <code className="text-xs">docs/ADMIN-CMS-PHASE2.md</code> عند التفعيل.
-      </p>
+      <AdminContentSubnav active="/admin/content" />
+      <div className="grid gap-4 sm:grid-cols-2">
+        {SECTIONS.map((s) => (
+          <Link
+            key={s.href}
+            href={s.href}
+            className="rounded-xl border border-brand-gray bg-brand-white p-5 transition hover:border-brand-gold hover:shadow-md"
+          >
+            <h2 className="font-bold text-brand-navy">{s.title}</h2>
+            <p className="mt-1 text-sm text-brand-navy/70">{s.desc}</p>
+          </Link>
+        ))}
+      </div>
     </AdminShell>
   );
 }

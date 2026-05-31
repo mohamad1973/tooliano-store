@@ -14,7 +14,6 @@ export const ADMIN_NAV: AdminNavItem[] = [
   {
     href: "/admin/content",
     label: "محتوى الموقع",
-    description: "مرحلة ٢ — قريباً",
-    phase: 2,
+    description: "هيدر، بنرات، فوتر، حملة",
   },
 ];
