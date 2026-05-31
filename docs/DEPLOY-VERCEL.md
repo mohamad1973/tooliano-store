@@ -95,15 +95,15 @@ SQLITE_PATH=./prisma/prisma/dev.db
 
 بعد الترحيل، إن كانت الحملات منتهية يُمدّدها السكربت تلقائياً (7 أيام). لتعطيل ذلك: `EXTEND_EXPIRED_CAMPAIGNS=false`. يدوياً: `npm run extend:campaigns`.
 
-### رفع صور الفيندور إلى WordPress
+### رفع صور الفيندور
 
-إن كانت `productImageUrl` تبدأ بـ `/uploads/vendors/`:
+على **Vercel** ضبط `WP_MEDIA_USER` (Username) و `WP_APP_PASSWORD` (Application Password فقط). الرفع من النموذج → وسائط WordPress؛ نشر المنتج → WooCommerce. تحقق: `npm run check:wp-media` ثم Redeploy.
+
+لترحيل صور قديمة محلية (`/uploads/vendors/`):
 
 ```bash
 npm run migrate:vendor-images
 ```
-
-يتطلب `WP_MEDIA_USER` و `WP_APP_PASSWORD` وملفات الصور في `public/uploads/vendors/`.
 
 ---
 

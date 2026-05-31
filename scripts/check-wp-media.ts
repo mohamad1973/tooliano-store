@@ -1,10 +1,9 @@
 /**
- * تحقق من إعداد رفع الوسائط إلى WordPress
+ * تحقق من إعداد رفع الوسائط إلى WordPress (دخول + رفع تجريبي)
  * الاستخدام: npm run check:wp-media
  */
 import { existsSync, readFileSync } from "fs";
 import path from "path";
-import axios from "axios";
 
 function loadEnvLocal() {
   const envPath = path.join(process.cwd(), ".env.local");
@@ -30,10 +29,6 @@ function loadEnvLocal() {
   }
 }
 
-function normalizeWpAppPassword(raw: string | undefined): string {
-  return (raw ?? "").replace(/\s+/g, "").trim();
-}
-
 async function main() {
   loadEnvLocal();
 
@@ -41,7 +36,6 @@ async function main() {
   const user = (
     process.env.WP_MEDIA_USER ?? process.env.WP_MEDIA_USERNAME ?? ""
   ).trim();
-  const appPassword = normalizeWpAppPassword(process.env.WP_APP_PASSWORD);
 
   console.log("=== فحص إعداد WordPress Media ===\n");
 
@@ -51,34 +45,28 @@ async function main() {
   }
   console.log(`✓ WC_BASE_URL = ${baseURL}`);
 
-  if (!user || !appPassword) {
+  if (!user || !process.env.WP_APP_PASSWORD?.trim()) {
     console.error("\n❌ WP_MEDIA_USER أو WP_APP_PASSWORD غير مضبوطين");
     console.error("   راجع: docs/WORDPRESS-MEDIA-SETUP.md");
     process.exit(1);
   }
   console.log(`✓ WP_MEDIA_USER = ${user}`);
-  console.log("✓ WP_APP_PASSWORD = (مضبوط)");
+  console.log("✓ WP_APP_PASSWORD = (مضبوط)\n");
 
-  const meUrl = new URL("/wp-json/wp/v2/users/me", `${baseURL}/`).toString();
-  const token = Buffer.from(`${user}:${appPassword}`).toString("base64");
+  const { getWordPressMediaFullStatus } = await import(
+    "../lib/wp-media-verify-shared"
+  );
+  const status = await getWordPressMediaFullStatus();
 
-  const res = await axios.get(meUrl, {
-    headers: { Authorization: `Basic ${token}` },
-    validateStatus: () => true,
-    timeout: 20_000,
-  });
-
-  if (res.status === 200) {
-    console.log("\n✅ اتصال WordPress ناجح — يمكنك «نشر على WordPress» من لوحة الأدمن.");
+  if (status.authOk && status.canUploadMedia) {
+    console.log(`✅ ${status.message}`);
+    console.log(
+      "\nيمكنك رفع الصور من الأدمن (وسائط WP) ثم «نشر على WordPress» للمنتج.",
+    );
     process.exit(0);
   }
 
-  const detail =
-    typeof res.data === "object" && res.data?.message
-      ? res.data.message
-      : `HTTP ${res.status}`;
-  console.error(`\n❌ فشل التحقق: ${detail}`);
-  console.error("   تأكد من Application Password وحساب مدير.");
+  console.error(`❌ ${status.message}`);
   process.exit(1);
 }
 

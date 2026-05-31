@@ -50,7 +50,7 @@ npm run dev
 من لوحة البائع: رفع صورة من الجهاز (JPG/PNG/WebP حتى 5 MB).
 
 - **تطوير محلي:** تُحفظ في `public/uploads/vendors/`.
-- **نشر على WordPress من الأدمن:** يتطلب `WP_MEDIA_USER` و `WP_APP_PASSWORD` في `.env.local`.
+- **Vercel / الإنتاج:** تُرفع إلى وسائط WordPress عند الاختيار — يتطلب `WP_MEDIA_USER` (مدير) و `WP_APP_PASSWORD` على Vercel.
 
 **دليل الإعداد الكامل:** [`docs/WORDPRESS-MEDIA-SETUP.md`](docs/WORDPRESS-MEDIA-SETUP.md)
 

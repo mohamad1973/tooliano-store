@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
 import { USER_ROLES } from "@/lib/db/constants";
 import { isWordPressMediaUploadConfigured } from "@/lib/wp-media-config";
-import { verifyWordPressMediaAuth } from "@/lib/wp-media-verify";
+import { getWordPressMediaFullStatus } from "@/lib/wp-media-verify";
 
 export async function GET() {
   const session = await getSession();
@@ -20,10 +20,12 @@ export async function GET() {
     });
   }
 
-  const verify = await verifyWordPressMediaAuth();
+  const status = await getWordPressMediaFullStatus();
   return NextResponse.json({
     configured: true,
-    verified: verify.ok,
-    message: verify.message,
+    verified: status.authOk && status.canUploadMedia,
+    authOk: status.authOk,
+    canUploadMedia: status.canUploadMedia,
+    message: status.message,
   });
 }

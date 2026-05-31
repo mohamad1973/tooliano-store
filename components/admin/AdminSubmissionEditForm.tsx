@@ -108,8 +108,8 @@ export function AdminSubmissionEditForm({
         تعديل المنتج (الإدارة)
       </h3>
       <p className="text-xs text-brand-navy/60">
-        يمكنك تعديل كل التفاصيل والصنف وإعادة رفع الصورة. التاجر لا يرى هذا
-        المحرر بعد الموافقة.
+        رفع الصورة = وسائط WordPress (Application Password). نشر المنتج =
+        WooCommerce من الزر المنفصل — ليس عند اختيار الملف فقط.
       </p>
 
       <form ref={formRef} className="space-y-3" onSubmit={(e) => e.preventDefault()}>

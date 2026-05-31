@@ -33,6 +33,9 @@ export function VendorProductImageField({
   const [preview, setPreview] = useState(initial);
   const [uploading, setUploading] = useState(false);
   const [uploaded, setUploaded] = useState(Boolean(initial));
+  const [uploadStorage, setUploadStorage] = useState<
+    "local" | "wordpress" | null
+  >(null);
   const [error, setError] = useState<string | null>(null);
   const objectUrlRef = useRef<string | null>(null);
 
@@ -74,7 +77,11 @@ export function VendorProductImageField({
         method: "POST",
         body,
       });
-      const data = (await res.json()) as { url?: string; error?: string };
+      const data = (await res.json()) as {
+        url?: string;
+        error?: string;
+        storage?: string;
+      };
       if (!res.ok || !data.url) {
         setError(data.error ?? "فشل رفع الصورة");
         setPreview(imageUrl || "");
@@ -83,6 +90,7 @@ export function VendorProductImageField({
       const normalized = normalizeUploadedUrl(data.url);
       setImageUrl(normalized);
       setPreview(normalized);
+      setUploadStorage(data.storage === "wordpress" ? "wordpress" : "local");
       setUploaded(true);
     } catch {
       setError("تعذر الاتصال بالخادم أثناء رفع الصورة");
@@ -117,7 +125,9 @@ export function VendorProductImageField({
           className="block w-full text-sm text-brand-navy file:me-3 file:rounded-lg file:border-0 file:bg-brand-gold file:px-3 file:py-2 file:text-sm file:font-semibold file:text-brand-navy hover:file:bg-brand-gold/90 disabled:opacity-60"
         />
         <p className="mt-1 text-xs text-brand-navy/60">
-          JPG أو PNG أو WebP — حتى 5 ميجابايت. يُرفع تلقائياً عند الاختيار.
+          JPG أو PNG أو WebP — حتى 5 ميجابايت. يُرفع تلقائياً إلى وسائط
+          WordPress على الإنتاج، أو إلى مجلد المتجر محلياً. اضغط «حفظ
+          التعديلات» ثم «نشر على WordPress» للمنتج في WooCommerce.
         </p>
       </div>
 
@@ -127,7 +137,9 @@ export function VendorProductImageField({
 
       {uploaded && imageUrl && !uploading ? (
         <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
-          تم رفع الصورة بنجاح
+          {uploadStorage === "wordpress"
+            ? "تم رفع الصورة إلى وسائط WordPress — اضغط «حفظ التعديلات» لربطها بالمنتج"
+            : "تم حفظ الصورة — اضغط «حفظ التعديلات» لربطها بالمنتج"}
         </p>
       ) : null}
 

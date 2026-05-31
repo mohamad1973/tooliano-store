@@ -51,7 +51,13 @@ export async function uploadToWordPressMedia(input: {
       typeof response.data === "object" && response.data?.message
         ? response.data.message
         : `HTTP ${response.status}`;
-    throw new Error(`فشل رفع الصورة إلى WordPress: ${detail}`);
+    const permissionHint =
+      /إنشاء مقالات|create posts|not allowed/i.test(detail)
+        ? " — استخدم حساب مدير (Administrator) في WP_MEDIA_USER مع Application Password جديد"
+        : "";
+    throw new Error(
+      `فشل رفع الصورة إلى WordPress: ${detail}${permissionHint}`,
+    );
   }
 
   const url =

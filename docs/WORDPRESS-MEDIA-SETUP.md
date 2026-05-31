@@ -4,7 +4,10 @@
 
 > صورة المنتج محفوظة محلياً — أضف WP_MEDIA_USER و WP_APP_PASSWORD في .env.local
 
-يعني أن صورة التاجر على جهاز التطوير (`public/uploads/vendors/`) ويجب رفعها إلى **tooliano.com** قبل إنشاء المنتج في WooCommerce.
+- **تطوير محلي (`npm run dev`):** الصور في `public/uploads/vendors/`.
+- **Vercel / الإنتاج:** رفع الصورة من النموذج → **وسائط WordPress** فقط (`WP_MEDIA_USER` + `WP_APP_PASSWORD` = Application Password).
+- **نشر المنتج:** زر «نشر على WordPress» → **WooCommerce** (`WC_CONSUMER_KEY` / `WC_CONSUMER_SECRET`).
+- التحقق: `npm run check:wp-media` (دخول + رفع تجريبي).
 
 ## 1) إنشاء Application Password
 

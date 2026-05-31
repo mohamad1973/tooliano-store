@@ -1,4 +1,7 @@
-import { uploadVendorProductImage } from "@/lib/vendor-image-upload";
+import {
+  resolveVendorImageUploadStorage,
+  uploadVendorProductImage,
+} from "@/lib/vendor-image-upload";
 
 export async function handleVendorImageUploadRequest(
   request: Request,
@@ -11,11 +14,15 @@ export async function handleVendorImageUploadRequest(
   }
 
   const buffer = Buffer.from(await file.arrayBuffer());
-  const result = await uploadVendorProductImage({
-    buffer,
-    mimeType: file.type || "application/octet-stream",
-    originalName: file.name || "product.jpg",
-  });
+  const storage = resolveVendorImageUploadStorage();
+  const result = await uploadVendorProductImage(
+    {
+      buffer,
+      mimeType: file.type || "application/octet-stream",
+      originalName: file.name || "product.jpg",
+    },
+    { storage },
+  );
 
   return { url: result.url, storage: result.storage };
 }
