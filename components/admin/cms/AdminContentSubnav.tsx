@@ -3,9 +3,12 @@ import Link from "next/link";
 const LINKS = [
   { href: "/admin/content", label: "فهرس المحتوى" },
   { href: "/admin/content/header", label: "الهيدر" },
+  { href: "/admin/content/menu", label: "قائمة الأقسام" },
   { href: "/admin/content/marquee", label: "الشريط المتحرك" },
   { href: "/admin/content/banners", label: "البنرات" },
-  { href: "/admin/content/home", label: "الصفحة الرئيسية" },
+  { href: "/admin/content/home", label: "أقسام الرئيسية" },
+  { href: "/admin/content/pages/home", label: "كتل الصفحة" },
+  { href: "/admin/content/theme", label: "ألوان الثيم" },
   { href: "/admin/content/footer", label: "الفوتر" },
   { href: "/admin/content/campaign", label: "صفحات الحملة" },
 ] as const;

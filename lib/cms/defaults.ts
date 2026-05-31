@@ -8,13 +8,37 @@ export const DEFAULT_MARQUEE_PHRASES = [
   "افضل مستلزمات البيت الحديث",
 ] as const;
 
+export const DEFAULT_THEME_COLORS = {
+  colorBrandNavy: "#14213d",
+  colorBrandGold: "#fca311",
+  colorBrandGray: "#e5e5e5",
+  colorBrandWhite: "#ffffff",
+  colorBackground: "#ffffff",
+  colorForeground: "#14213d",
+} as const;
+
 export const DEFAULT_SITE_SETTINGS: Record<string, string> = {
   siteName: SITE_NAME,
   tagline: "أدوات المنزل العصرية",
   logoUrl: "",
   marqueeEnabled: "true",
   metaDescription: "أدوات المنزل العصري — Tooliano",
+  ...DEFAULT_THEME_COLORS,
 };
+
+export const DEFAULT_NAV_MENU = [
+  { label: "الكل", href: "/products", linkType: "internal" as const },
+  {
+    label: "منتجات",
+    href: "/products",
+    linkType: "internal" as const,
+  },
+  {
+    label: "شراء جماعي",
+    href: "/campaign",
+    linkType: "internal" as const,
+  },
+];
 
 export const DEFAULT_HOME_SECTIONS = [
   { key: "category_banners", label: "بنرات التصنيفات", sortOrder: 0 },

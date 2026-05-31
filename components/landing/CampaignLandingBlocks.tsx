@@ -4,14 +4,14 @@ import { WalletPolicySection } from "@/components/landing/WalletPolicySection";
 import {
   getFaqContent,
   getHowItWorksContent,
-  getWalletPolicyContent,
+  getWalletPolicyContentSanitized,
 } from "@/lib/cms/get-site-content";
 
 export async function CampaignLandingBlocks() {
   const [faq, howItWorks, walletPolicy] = await Promise.all([
     getFaqContent(),
     getHowItWorksContent(),
-    getWalletPolicyContent(),
+    getWalletPolicyContentSanitized(),
   ]);
 
   return (

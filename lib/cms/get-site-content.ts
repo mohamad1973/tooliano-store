@@ -15,9 +15,13 @@ import {
   DEFAULT_HOME_SECTIONS,
   DEFAULT_HOW_IT_WORKS,
   DEFAULT_MARQUEE_PHRASES,
+  DEFAULT_NAV_MENU,
   DEFAULT_SITE_SETTINGS,
+  DEFAULT_THEME_COLORS,
   DEFAULT_WALLET_POLICY,
 } from "@/lib/cms/defaults";
+import { PAGE_KEYS } from "@/lib/cms/page-blocks";
+import { sanitizeRichHtml } from "@/lib/cms/sanitize";
 import { CMS_CACHE_TAG } from "@/lib/cms/revalidate";
 import type {
   FaqContent,
@@ -26,7 +30,10 @@ import type {
   HomeSectionView,
   HowItWorksContent,
   MarqueeItemView,
+  NavMenuItemView,
+  PageBlockView,
   SiteSettingsView,
+  ThemeColorsView,
   WalletPolicyContent,
 } from "@/lib/cms/types";
 import { SITE_NAME } from "@/lib/constants";
@@ -270,4 +277,88 @@ export async function getWalletPolicyContent(): Promise<WalletPolicyContent> {
 
 export async function getFooterColumns(): Promise<FooterColumnView[]> {
   return cachedFooter();
+}
+
+async function loadNavMenuRaw(): Promise<NavMenuItemView[]> {
+  const rows = await prisma.navMenuItem.findMany({
+    orderBy: { sortOrder: "asc" },
+  });
+  if (rows.length === 0) {
+    return DEFAULT_NAV_MENU.map((item, i) => ({
+      id: `default-nav-${i}`,
+      label: item.label,
+      href: item.href,
+      linkType: item.linkType,
+      categorySlug: null,
+      sortOrder: i,
+      enabled: true,
+    }));
+  }
+  return rows.map((r) => ({
+    id: r.id,
+    label: r.label,
+    href: r.href,
+    linkType: r.linkType,
+    categorySlug: r.categorySlug,
+    sortOrder: r.sortOrder,
+    enabled: r.enabled,
+  }));
+}
+
+const cachedNavMenu = unstable_cache(loadNavMenuRaw, ["cms-nav-menu"], {
+  tags: [CMS_CACHE_TAG],
+});
+
+export async function getNavMenuItems(): Promise<NavMenuItemView[]> {
+  const items = await cachedNavMenu();
+  return items.filter((i) => i.enabled);
+}
+
+async function loadThemeColorsRaw(): Promise<ThemeColorsView> {
+  const rows = await prisma.siteSetting.findMany();
+  const map = new Map(rows.map((r) => [r.key, r.value]));
+  const get = (key: keyof typeof DEFAULT_THEME_COLORS) =>
+    map.get(key) ?? DEFAULT_THEME_COLORS[key];
+
+  return {
+    brandNavy: get("colorBrandNavy"),
+    brandGold: get("colorBrandGold"),
+    brandGray: get("colorBrandGray"),
+    brandWhite: get("colorBrandWhite"),
+    background: get("colorBackground"),
+    foreground: get("colorForeground"),
+  };
+}
+
+const cachedTheme = unstable_cache(loadThemeColorsRaw, ["cms-theme"], {
+  tags: [CMS_CACHE_TAG],
+});
+
+export async function getThemeColors(): Promise<ThemeColorsView> {
+  return cachedTheme();
+}
+
+async function loadPageBlocksRaw(pageKey: string): Promise<PageBlockView[]> {
+  return prisma.pageBlock.findMany({
+    where: { pageKey, enabled: true },
+    orderBy: { sortOrder: "asc" },
+  });
+}
+
+export async function getPageBlocks(pageKey = PAGE_KEYS.HOME): Promise<PageBlockView[]> {
+  const cached = unstable_cache(
+    () => loadPageBlocksRaw(pageKey),
+    [`cms-page-blocks-${pageKey}`],
+    { tags: [CMS_CACHE_TAG] },
+  );
+  return cached();
+}
+
+export async function getWalletPolicyContentSanitized(): Promise<WalletPolicyContent> {
+  const content = await getWalletPolicyContent();
+  const introHasHtml = /<[a-z][\s\S]*>/i.test(content.intro);
+  return {
+    ...content,
+    intro: introHasHtml ? sanitizeRichHtml(content.intro) : content.intro,
+  };
 }

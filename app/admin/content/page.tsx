@@ -10,6 +10,11 @@ const SECTIONS = [
     desc: "اسم الموقع، الشعار الفرعي، صورة الشعار، إظهار الماركوي",
   },
   {
+    href: "/admin/content/menu",
+    title: "قائمة الأقسام",
+    desc: "منيو الهيدر — إضافة، حذف، سحب وإفلات",
+  },
+  {
     href: "/admin/content/marquee",
     title: "الشريط المتحرك",
     desc: "عبارات أعلى الموقع",
@@ -21,8 +26,18 @@ const SECTIONS = [
   },
   {
     href: "/admin/content/home",
-    title: "الصفحة الرئيسية",
-    desc: "ترتيب وإظهار أقسام الصفحة",
+    title: "أقسام الصفحة الرئيسية",
+    desc: "ترتيب وإظهار الأقسام (بنرات، شراء جماعي)",
+  },
+  {
+    href: "/admin/content/pages/home",
+    title: "كتل الصفحة الرئيسية",
+    desc: "بانر، نص غني، أزرار — سحب وإفلات",
+  },
+  {
+    href: "/admin/content/theme",
+    title: "ألوان الثيم",
+    desc: "ذهبي، كحلي، خلفية، نص",
   },
   {
     href: "/admin/content/footer",

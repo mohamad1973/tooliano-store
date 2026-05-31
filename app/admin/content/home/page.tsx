@@ -1,5 +1,5 @@
 import { AdminContentSubnav } from "@/components/admin/cms/AdminContentSubnav";
-import { HomeSectionsEditor } from "@/components/admin/cms/HomeSectionsEditor";
+import { HomeSectionsDndEditor } from "@/components/admin/cms/HomeSectionsDndEditor";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { requireAdmin } from "@/lib/auth/guards";
 import { prisma } from "@/lib/db/prisma";
@@ -15,7 +15,7 @@ export default async function AdminContentHomePage() {
   return (
     <AdminShell title="الصفحة الرئيسية" subtitle="ترتيب وإظهار الأقسام">
       <AdminContentSubnav active="/admin/content/home" />
-      <HomeSectionsEditor initial={items} />
+      <HomeSectionsDndEditor initial={items} />
     </AdminShell>
   );
 }

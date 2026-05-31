@@ -6,10 +6,28 @@ export async function POST(request: Request) {
   const session = await requireApiAdmin();
   if (isSessionResponse(session)) return session;
 
-  const body = await parseBody<{ id: string; direction: "up" | "down" }>(
-    request,
-  );
+  const body = await parseBody<{
+    id?: string;
+    direction?: "up" | "down";
+    orderedIds?: string[];
+  }>(request);
   if (body instanceof Response) return body;
+
+  if (body.orderedIds?.length) {
+    await prisma.$transaction(
+      body.orderedIds.map((id, index) =>
+        prisma.homeSection.update({
+          where: { id },
+          data: { sortOrder: index },
+        }),
+      ),
+    );
+    return cmsMutationResponse();
+  }
+
+  if (!body.id || !body.direction) {
+    return Response.json({ error: "طلب غير صالح" }, { status: 400 });
+  }
 
   const sections = await prisma.homeSection.findMany({
     orderBy: { sortOrder: "asc" },

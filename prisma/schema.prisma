@@ -267,3 +267,27 @@ model FooterLink {
 
   @@index([columnId, sortOrder])
 }
+
+model NavMenuItem {
+  id           String   @id @default(cuid())
+  label        String
+  href         String
+  linkType     String   @default("internal")
+  categorySlug String?
+  sortOrder    Int      @default(0)
+  enabled      Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model PageBlock {
+  id        String   @id @default(cuid())
+  pageKey   String   @default("home")
+  type      String
+  payload   String   @db.Text
+  sortOrder Int      @default(0)
+  enabled   Boolean  @default(true)
+  updatedAt DateTime @updatedAt
+
+  @@index([pageKey, sortOrder])
+}

@@ -7,6 +7,7 @@ import {
   DEFAULT_HOME_SECTIONS,
   DEFAULT_HOW_IT_WORKS,
   DEFAULT_MARQUEE_PHRASES,
+  DEFAULT_NAV_MENU,
   DEFAULT_SITE_SETTINGS,
   DEFAULT_WALLET_POLICY,
 } from "../lib/cms/defaults";
@@ -115,5 +116,41 @@ export async function seedCms(prisma: PrismaClient) {
       });
     }
     console.log("CMS: footer seeded");
+  }
+
+  const navCount = await prisma.navMenuItem.count();
+  if (navCount === 0) {
+    await prisma.navMenuItem.createMany({
+      data: DEFAULT_NAV_MENU.map((item, sortOrder) => ({
+        label: item.label,
+        href: item.href,
+        linkType: item.linkType,
+        categorySlug: null,
+        sortOrder,
+        enabled: true,
+      })),
+    });
+    console.log("CMS: nav menu seeded");
+  }
+
+  const blockCount = await prisma.pageBlock.count({
+    where: { pageKey: "home" },
+  });
+  if (blockCount === 0) {
+    await prisma.pageBlock.create({
+      data: {
+        pageKey: "home",
+        type: "hero",
+        sortOrder: 0,
+        payload: JSON.stringify({
+          title: "عروض شراء جماعي على Tooliano",
+          subtitle: "وفّر أكثر عند الشراء معاً",
+          buttonLabel: "تصفّح الفرص",
+          buttonHref: "/campaign",
+        }),
+        enabled: true,
+      },
+    });
+    console.log("CMS: default home hero block seeded");
   }
 }

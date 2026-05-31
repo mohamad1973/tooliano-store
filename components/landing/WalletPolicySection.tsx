@@ -10,9 +10,10 @@ export function WalletPolicySection({ content }: { content: WalletPolicyContent 
         <h2 className="text-center text-2xl font-bold sm:text-3xl">
           {content.title}
         </h2>
-        <p className="mx-auto mt-3 max-w-2xl text-center text-sm leading-relaxed text-brand-white/80 sm:text-base">
-          {content.intro}
-        </p>
+        <div
+          className="prose prose-invert prose-sm mx-auto mt-3 max-w-2xl text-center text-brand-white/80 sm:text-base [&_a]:text-brand-gold"
+          dangerouslySetInnerHTML={{ __html: content.intro }}
+        />
         <ul className="mt-8 grid gap-4 sm:grid-cols-3">
           {content.options.map((o) => (
             <li

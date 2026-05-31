@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Cairo } from "next/font/google";
+import { ThemeVariables } from "@/components/ThemeVariables";
 import "./globals.css";
 import { SITE_NAME } from "@/lib/constants";
 
@@ -25,6 +26,7 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl" className={`${cairo.variable} h-full`}>
       <body className="min-h-full bg-brand-white font-sans text-brand-navy antialiased">
+        <ThemeVariables />
         {children}
       </body>
     </html>

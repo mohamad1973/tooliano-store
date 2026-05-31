@@ -46,6 +46,34 @@ export type HomeSectionView = {
   visible: boolean;
 };
 
+export type NavMenuItemView = {
+  id: string;
+  label: string;
+  href: string;
+  linkType: string;
+  categorySlug: string | null;
+  sortOrder: number;
+  enabled: boolean;
+};
+
+export type ThemeColorsView = {
+  brandNavy: string;
+  brandGold: string;
+  brandGray: string;
+  brandWhite: string;
+  background: string;
+  foreground: string;
+};
+
+export type PageBlockView = {
+  id: string;
+  pageKey: string;
+  type: string;
+  payload: string;
+  sortOrder: number;
+  enabled: boolean;
+};
+
 export type FooterColumnView = {
   id: string;
   title: string;

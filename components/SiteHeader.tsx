@@ -1,23 +1,16 @@
 import Image from "next/image";
 import Link from "next/link";
-import { fetchProductCategories } from "@/lib/categories";
-import { getSiteSettings, isMarqueeEnabled } from "@/lib/cms/get-site-content";
-import { HeaderCategoryNav } from "@/components/HeaderCategoryNav";
+import { getNavMenuItems, getSiteSettings, isMarqueeEnabled } from "@/lib/cms/get-site-content";
+import { HeaderCmsNav } from "@/components/HeaderCmsNav";
 import { HeaderIconsSocial } from "@/components/HeaderIconsSocial";
 import { TopMarquee } from "@/components/TopMarquee";
 
 export async function SiteHeader() {
-  const [settings, showMarquee] = await Promise.all([
+  const [settings, showMarquee, menuItems] = await Promise.all([
     getSiteSettings(),
     isMarqueeEnabled(),
+    getNavMenuItems(),
   ]);
-
-  let categories: Awaited<ReturnType<typeof fetchProductCategories>> = [];
-  try {
-    categories = await fetchProductCategories();
-  } catch {
-    /* يبقى الهيدر بدون تصنيفات إن فشل الـ API */
-  }
 
   return (
     <div className="sticky top-0 z-50 shadow-[0_4px_24px_-8px_rgba(20,33,61,0.2)]">
@@ -53,15 +46,9 @@ export async function SiteHeader() {
             </div>
 
             <div className="min-h-[2.5rem] min-w-0 flex-1 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-brand-gold/60">
-              {categories.length > 0 ? (
-                <div className="inline-flex min-w-max rounded-2xl border border-brand-gray bg-brand-white px-1.5 py-1 shadow-sm sm:px-2">
-                  <HeaderCategoryNav categories={categories} />
-                </div>
-              ) : (
-                <p className="flex h-9 items-center text-center text-[11px] text-brand-navy/50">
-                  التصنيفات غير متاحة حالياً
-                </p>
-              )}
+              <div className="inline-flex min-w-max rounded-2xl border border-brand-gray bg-brand-white px-1.5 py-1 shadow-sm sm:px-2">
+                <HeaderCmsNav items={menuItems} />
+              </div>
             </div>
 
             <HeaderIconsSocial />
