@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { HeaderAccountLink } from "@/components/HeaderAccountLink";
+import { HeaderWalletLink } from "@/components/HeaderWalletLink";
 import { SOCIAL_URLS, WP_STORE_ORIGIN, WP_WISHLIST_URL } from "@/lib/constants";
 
 function iconWrap(
@@ -128,6 +129,7 @@ export function HeaderIconsSocial() {
         <HeaderAccountLink className={iconClass}>
           <IconUser />
         </HeaderAccountLink>
+        <HeaderWalletLink className={iconClass} />
         <Link
           href="/register"
           aria-label="إنشاء حساب"

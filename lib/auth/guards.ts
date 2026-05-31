@@ -23,3 +23,11 @@ export async function requireAdmin(): Promise<SessionPayload> {
 export async function requireVendor(): Promise<SessionPayload> {
   return requireRole(USER_ROLES.VENDOR);
 }
+
+export async function requireBuyer(): Promise<SessionPayload> {
+  return requireRole(USER_ROLES.BUYER);
+}
+
+export async function requireDeliveryAgent(): Promise<SessionPayload> {
+  return requireRole(USER_ROLES.DELIVERY_AGENT);
+}

@@ -36,7 +36,11 @@ export async function POST(request: Request) {
         ? "/admin"
         : user.role === USER_ROLES.VENDOR
           ? "/vendor"
-          : "/";
+          : user.role === USER_ROLES.DELIVERY_AGENT
+            ? "/delivery"
+            : user.role === USER_ROLES.BUYER
+              ? "/account"
+              : "/";
 
     return NextResponse.json({ ok: true, redirectTo });
   } catch (e) {

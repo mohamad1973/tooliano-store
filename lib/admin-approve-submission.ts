@@ -60,6 +60,11 @@ export async function approveProductSubmission(
   const campaignEndsAt = new Date();
   campaignEndsAt.setDate(campaignEndsAt.getDate() + DEFAULT_CAMPAIGN_DAYS);
 
+  const vendorSettlement =
+    submission.suggestedGroupPrice != null
+      ? Math.round(submission.suggestedGroupPrice * 0.86 * 100) / 100
+      : null;
+
   const updated = await prisma.productSubmission.update({
     where: { id: submissionId },
     data: {
@@ -69,6 +74,9 @@ export async function approveProductSubmission(
       reviewedAt: new Date(),
       campaignEndsAt,
       reservedQuantity: submission.reservedQuantity ?? 0,
+      ...(vendorSettlement != null
+        ? { vendorSettlementUnitPrice: vendorSettlement }
+        : {}),
     },
   });
 

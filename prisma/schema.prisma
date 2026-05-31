@@ -12,14 +12,18 @@ model User {
   username     String   @unique
   passwordHash String
   role         String
-  /// رقم الموبايل الموحد (مشتري/تاجر/أدمن)
   phone        String?
   email        String?
+  disabled     Boolean  @default(false)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  vendorProfile      VendorProfile?
-  productSubmissions ProductSubmission[] @relation("VendorSubmissions")
+  vendorProfile         VendorProfile?
+  productSubmissions    ProductSubmission[] @relation("VendorSubmissions")
+  wallet                Wallet?
+  groupBuyOrders        GroupBuyOrder[]     @relation("BuyerOrders")
+  deliveryConfirmations DeliveryConfirmation[] @relation("ConfirmedByAgent")
+  adminAuditLogs        AdminAuditLog[]       @relation("AdminActor")
 }
 
 model VendorProfile {
@@ -42,34 +46,159 @@ model VendorProfile {
 }
 
 model ProductSubmission {
-  id                   String    @id @default(cuid())
-  vendorId             String
-  vendor               User      @relation("VendorSubmissions", fields: [vendorId], references: [id], onDelete: Cascade)
-  productName          String
-  productType          String
-  productCondition     String    @default("NEW")
-  productDescription   String    @default("")
-  specWatts            String?
-  specVoltage          String?
-  specCapacity         String?
-  specPower            String?
-  specColor            String?
-  specExtra            String?
-  outletReason         String?
-  suggestedQuantity    Int
-  suggestedRetailPrice Float?
-  suggestedGroupPrice  Float?
-  productImageUrl      String?
-  status               String    @default("PENDING")
-  adminNote            String?
-  reviewedAt           DateTime?
-  wooProductId         Int?
-  campaignEndsAt       DateTime?
-  reservedQuantity     Int       @default(0)
-  publishedOnStore     Boolean   @default(false)
-  wooSyncStatus        String    @default("none")
-  wooSyncError         String?
-  idempotencyKey       String?   @unique
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
+  id                        String    @id @default(cuid())
+  vendorId                  String
+  vendor                    User      @relation("VendorSubmissions", fields: [vendorId], references: [id], onDelete: Cascade)
+  productName               String
+  productType               String
+  productCondition          String    @default("NEW")
+  productDescription        String    @default("")
+  specWatts                 String?
+  specVoltage               String?
+  specCapacity              String?
+  specPower                   String?
+  specColor                 String?
+  specExtra                 String?
+  outletReason              String?
+  suggestedQuantity         Int
+  suggestedRetailPrice      Float?
+  suggestedGroupPrice       Float?
+  vendorSettlementUnitPrice Float?
+  productImageUrl           String?
+  status                    String    @default("PENDING")
+  adminNote                 String?
+  reviewedAt                DateTime?
+  wooProductId              Int?
+  campaignEndsAt            DateTime?
+  reservedQuantity          Int       @default(0)
+  publishedOnStore          Boolean   @default(false)
+  wooSyncStatus             String    @default("none")
+  wooSyncError              String?
+  idempotencyKey            String?   @unique
+  campaignOutcome           String    @default("ACTIVE")
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
+
+  groupBuyOrders GroupBuyOrder[]
+}
+
+model Wallet {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  availableBalance Float    @default(0)
+  lockedBalance    Float    @default(0)
+  currency         String   @default("EGP")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  transactions WalletTransaction[]
+}
+
+model WalletTransaction {
+  id                    String   @id @default(cuid())
+  walletId              String
+  wallet                Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  type                  String
+  amount                Float
+  balanceAfterAvailable Float
+  balanceAfterLocked    Float
+  referenceType         String?
+  referenceId           String?
+  idempotencyKey        String?  @unique
+  note                  String?
+  metadata              String?  @db.Text
+  createdAt             DateTime @default(now())
+
+  @@index([walletId, createdAt])
+}
+
+model GroupBuyOrder {
+  id               String    @id @default(cuid())
+  buyerId          String
+  buyer            User      @relation("BuyerOrders", fields: [buyerId], references: [id], onDelete: Cascade)
+  submissionId     String
+  submission       ProductSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  quantity         Int
+  unitGroupPrice   Float
+  lineTotal        Float
+  minDepositAmount Float
+  paidOnlineTotal  Float     @default(0)
+  depositPercent   Float     @default(5)
+  depositAmount    Float
+  codAmount        Float
+  status           String    @default("PENDING_PAYMENT")
+  paymobOrderId    String?
+  paymentRef       String?
+  idempotencyKey   String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  delivery  DeliveryConfirmation?
+  payments  OrderPayment[]
+
+  @@index([buyerId])
+  @@index([submissionId, status])
+}
+
+model OrderPayment {
+  id             String        @id @default(cuid())
+  orderId        String
+  order          GroupBuyOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  amount         Float
+  paymentRef     String        @unique
+  idempotencyKey String?       @unique
+  paymobOrderId  String?
+  createdAt      DateTime      @default(now())
+
+  @@index([orderId, createdAt])
+}
+
+model DeliveryConfirmation {
+  id                 String    @id @default(cuid())
+  orderId            String    @unique
+  order              GroupBuyOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  deliveryCodeHash   String
+  codeExpiresAt      DateTime
+  failedAttempts     Int       @default(0)
+  lockedAt           DateTime?
+  confirmedAt        DateTime?
+  confirmedByAgentId String?
+  confirmedByAgent   User?     @relation("ConfirmedByAgent", fields: [confirmedByAgentId], references: [id], onDelete: SetNull)
+  codCollected       Boolean   @default(true)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  codeReveal DeliveryCodeReveal?
+}
+
+model DeliveryCodeReveal {
+  id        String   @id @default(cuid())
+  orderId   String   @unique
+  order     DeliveryConfirmation @relation(fields: [orderId], references: [orderId], onDelete: Cascade)
+  plainCode String
+  viewedAt  DateTime?
+  createdAt DateTime @default(now())
+}
+
+model PlatformLedgerEntry {
+  id        String   @id @default(cuid())
+  amount    Float
+  orderId   String?
+  note      String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model AdminAuditLog {
+  id           String   @id @default(cuid())
+  adminId      String
+  admin        User     @relation("AdminActor", fields: [adminId], references: [id], onDelete: Cascade)
+  action       String
+  targetUserId String?
+  meta         String?  @db.Text
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
 }

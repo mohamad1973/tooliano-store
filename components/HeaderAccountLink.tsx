@@ -21,8 +21,11 @@ export async function HeaderAccountLink({
     href = "/vendor";
     label = "لوحة البائع";
   } else if (session?.role === USER_ROLES.BUYER) {
-    href = "/";
+    href = "/account";
     label = "حسابي";
+  } else if (session?.role === USER_ROLES.DELIVERY_AGENT) {
+    href = "/delivery";
+    label = "تسليم";
   }
 
   return (

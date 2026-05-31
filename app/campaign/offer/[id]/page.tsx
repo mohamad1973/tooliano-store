@@ -17,6 +17,8 @@ import {
   productConditionLabel,
 } from "@/lib/product-condition-labels";
 import { formatCurrency } from "@/lib/format";
+import { getSession } from "@/lib/auth/session";
+import { USER_ROLES } from "@/lib/db/constants";
 import { requireSubmissionCampaign } from "@/lib/submission-campaign";
 import { SITE_NAME } from "@/lib/constants";
 
@@ -40,6 +42,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function OfferCampaignPage({ params }: Props) {
   const { id } = await params;
   const campaign = await requireSubmissionCampaign(id);
+  const session = await getSession();
+  const isLoggedIn = Boolean(session);
+  const isBuyer = session?.role === USER_ROLES.BUYER;
 
   return (
     <>
@@ -106,8 +111,11 @@ export default async function OfferCampaignPage({ params }: Props) {
               targetQuantity={campaign.targetQuantity}
             />
             <ReserveSection
+              submissionId={campaign.id}
               groupPrice={campaign.groupPrice}
               productName={campaign.productName}
+              isLoggedIn={isLoggedIn}
+              isBuyer={isBuyer}
             />
           </div>
         </div>

@@ -33,6 +33,24 @@ async function main() {
   if (migrated.count > 0) {
     console.log("Migrated approved products to publishedOnStore:", migrated.count);
   }
+
+  const agentUsername = process.env.DELIVERY_AGENT_USERNAME ?? "agent1";
+  const agentPassword = process.env.DELIVERY_AGENT_PASSWORD ?? "agent123";
+  const agentExisting = await prisma.user.findUnique({
+    where: { username: agentUsername },
+  });
+  if (!agentExisting) {
+    const passwordHash = await bcrypt.hash(agentPassword, 12);
+    await prisma.user.create({
+      data: {
+        username: agentUsername,
+        passwordHash,
+        role: "DELIVERY_AGENT",
+        phone: "01000000001",
+      },
+    });
+    console.log("Delivery agent created:", agentUsername);
+  }
 }
 
 main()

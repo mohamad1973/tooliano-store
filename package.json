@@ -19,6 +19,7 @@
     "verify:db": "dotenv -e .env.local -- npx tsx scripts/verify-db.ts",
     "verify:neon-db": "npm run verify:db",
     "extend:campaigns": "dotenv -e .env.local -- npx tsx scripts/extend-expired-campaigns.ts",
+    "jobs:sync-campaigns": "dotenv -e .env.local -- npx tsx scripts/jobs/sync-campaigns.ts",
     "env:sync-db-url": "npx tsx scripts/sync-database-url.ts",
     "setup:hostinger": "npx tsx scripts/setup-hostinger-db.ts",
     "test:mysql": "dotenv -e .env.local -- npx tsx scripts/test-mysql-connection.ts",

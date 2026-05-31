@@ -78,6 +78,22 @@ export async function fetchSubmissionCampaignById(
   };
 }
 
+export async function fetchSubmissionCampaignByWooProductId(
+  wooProductId: number,
+): Promise<SubmissionCampaignView | null> {
+  const row = await prisma.productSubmission.findFirst({
+    where: {
+      wooProductId,
+      status: APPROVAL_STATUS.APPROVED,
+      publishedOnStore: true,
+    },
+    orderBy: { updatedAt: "desc" },
+    select: { id: true },
+  });
+  if (!row) return null;
+  return fetchSubmissionCampaignById(row.id);
+}
+
 export async function requireSubmissionCampaign(
   id: string,
 ): Promise<SubmissionCampaignView> {

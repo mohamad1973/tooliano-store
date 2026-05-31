@@ -14,6 +14,8 @@ import {
   businessTypeLabel,
 } from "@/lib/approval-labels";
 import { prisma } from "@/lib/db/prisma";
+import { getVendorOrderSummaries } from "@/lib/vendor/submission-orders";
+import { orderStatusLabel } from "@/lib/orders/labels";
 
 export const metadata = {
   title: "لوحة البائع",
@@ -22,12 +24,13 @@ export const metadata = {
 export default async function VendorDashboardPage() {
   const session = await requireVendor();
 
-  const [profile, submissions] = await Promise.all([
+  const [profile, submissions, campaignOrders] = await Promise.all([
     prisma.vendorProfile.findUnique({ where: { userId: session.userId } }),
     prisma.productSubmission.findMany({
       where: { vendorId: session.userId },
       orderBy: { createdAt: "desc" },
     }),
+    getVendorOrderSummaries(session.userId),
   ]);
 
   return (
@@ -154,6 +157,35 @@ export default async function VendorDashboardPage() {
             ))}
           </ul>
         )}
+
+        {campaignOrders.length > 0 ? (
+          <section className="mb-8">
+            <h3 className="mb-3 text-base font-bold text-brand-navy">
+              طلبات الشراء الجماعي (بدون مبالغ)
+            </h3>
+            <ul className="space-y-3">
+              {campaignOrders.map((c) => (
+                <li
+                  key={c.id}
+                  className="rounded-xl border border-brand-gray p-3 text-sm"
+                >
+                  <p className="font-semibold">{c.productName}</p>
+                  <p className="text-brand-navy/60">
+                    محجوز {c.reservedQuantity} / {c.targetQuantity} —{" "}
+                    {c.campaignOutcome}
+                  </p>
+                  <ul className="mt-2 space-y-1 text-xs text-brand-navy/70">
+                    {c.orders.map((o) => (
+                      <li key={o.id}>
+                        كمية {o.quantity} — {orderStatusLabel(o.status)}
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
 
         <VendorProductForm />
       </section>

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { SiteHeader } from "@/components/SiteHeader";
 import { CampaignFaq } from "@/components/landing/CampaignFaq";
 import { CountdownTimer } from "@/components/landing/CountdownTimer";
@@ -8,13 +8,13 @@ import { HowItWorks } from "@/components/landing/HowItWorks";
 import { PriceComparison } from "@/components/landing/PriceComparison";
 import { ProductGallery } from "@/components/landing/ProductGallery";
 import { QuantityProgress } from "@/components/landing/QuantityProgress";
-import { ReserveSection } from "@/components/landing/ReserveSection";
 import { StickyReserveBar } from "@/components/landing/StickyReserveBar";
 import { WalletPolicySection } from "@/components/landing/WalletPolicySection";
 import { WhyGroupBuy } from "@/components/landing/WhyGroupBuy";
 import { getCampaignConfig } from "@/lib/campaign-config";
 import { formatCurrency } from "@/lib/format";
 import { fetchProductDetailById } from "@/lib/product-detail";
+import { fetchSubmissionCampaignByWooProductId } from "@/lib/submission-campaign";
 import { SITE_NAME } from "@/lib/constants";
 
 type Props = {
@@ -41,6 +41,12 @@ export default async function CampaignLandingPage({ params }: Props) {
 
   const product = await fetchProductDetailById(productId);
   if (!product) notFound();
+
+  const submissionCampaign =
+    await fetchSubmissionCampaignByWooProductId(productId);
+  if (submissionCampaign) {
+    redirect(`/campaign/offer/${submissionCampaign.id}`);
+  }
 
   const campaign = getCampaignConfig(productId);
 
@@ -106,10 +112,21 @@ export default async function CampaignLandingPage({ params }: Props) {
               groupPrice={campaign.groupPrice}
               targetQuantity={campaign.targetQuantity}
             />
-            <ReserveSection
-              groupPrice={campaign.groupPrice}
-              productName={product.name}
-            />
+            <div
+              id="reserve"
+              className="scroll-mt-24 rounded-2xl border-2 border-brand-gray bg-brand-white p-6 text-center shadow-lg sm:p-8"
+            >
+              <h2 className="text-xl font-bold text-brand-navy">احجز الآن</h2>
+              <p className="mt-3 text-sm text-brand-navy/70">
+                الحجز الجماعي متاح عبر العروض المعتمدة من التجار على المتجر.
+              </p>
+              <Link
+                href="/products"
+                className="mt-6 inline-block rounded-xl bg-brand-gold px-6 py-3 text-sm font-bold text-brand-navy transition hover:bg-brand-gold/90"
+              >
+                تصفّح فرص الشراء الجماعي
+              </Link>
+            </div>
           </div>
         </div>
       </section>
