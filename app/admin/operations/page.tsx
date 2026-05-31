@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { AdminReviewActions } from "@/components/admin/AdminReviewActions";
 import { AdminSubmissionImagePreview } from "@/components/admin/AdminSubmissionImagePreview";
+import { PersistProductImagesPanel } from "@/components/admin/PersistProductImagesPanel";
+import { getSubmissionImageUrlForAdmin } from "@/lib/submission-image-persist";
 import { AdminSubmissionSpecsSummary } from "@/components/admin/AdminSubmissionSpecsSummary";
 import { AdminShell } from "@/components/admin/AdminShell";
 import {
@@ -44,6 +46,7 @@ export default async function AdminOperationsPage() {
       title="العمليات"
       subtitle={`${pendingVendors} تاجر قيد المراجعة · ${pendingProducts} منتج قيد المراجعة`}
     >
+      <PersistProductImagesPanel wpMediaConfigured={wpMediaConfigured} />
       <section className="mb-10">
         <h2 className="mb-4 text-lg font-bold text-brand-navy">
           طلبات التجار ({vendors.length})
@@ -137,6 +140,7 @@ export default async function AdminOperationsPage() {
               {item.productImageUrl ? (
                 <AdminSubmissionImagePreview
                   url={item.productImageUrl}
+                  displaySrc={getSubmissionImageUrlForAdmin(item.productImageUrl)}
                   alt={item.productName}
                 />
               ) : null}

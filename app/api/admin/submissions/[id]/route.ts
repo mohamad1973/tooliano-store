@@ -13,9 +13,21 @@ export async function PATCH(request: Request, { params }: Params) {
   }
 
   const { id } = await params;
-  const body = await request.json();
+  const body = (await request.json()) as {
+    status?: string;
+    adminNote?: string;
+    clearProductImage?: boolean;
+  };
   const status = String(body.status ?? "").trim();
   const adminNote = String(body.adminNote ?? "").trim() || null;
+
+  if (body.clearProductImage === true) {
+    const updated = await prisma.productSubmission.update({
+      where: { id },
+      data: { productImageUrl: null },
+    });
+    return NextResponse.json({ ok: true, submission: updated });
+  }
 
   if (status === APPROVAL_STATUS.APPROVED) {
     const result = await approveProductSubmission(id, adminNote);

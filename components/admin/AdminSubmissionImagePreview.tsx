@@ -6,14 +6,16 @@ import {
 type Props = {
   url: string | null;
   alt: string;
+  /** من السيرفر — لا يُسقِط الروابط العامة عند العرض في الأدمن */
+  displaySrc?: string | null;
 };
 
-export function AdminSubmissionImagePreview({ url, alt }: Props) {
+export function AdminSubmissionImagePreview({ url, alt, displaySrc }: Props) {
   if (!url) {
     return <p className="mt-2 text-xs text-red-600">⚠ لا توجد صورة</p>;
   }
 
-  const displaySrc = normalizeProductImageSrc(url) ?? url;
+  const resolved = displaySrc ?? normalizeProductImageSrc(url) ?? url;
 
   if (!isValidProductImageUrl(url)) {
     return (
@@ -29,12 +31,12 @@ export function AdminSubmissionImagePreview({ url, alt }: Props) {
     <div className="mt-3">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={displaySrc}
+        src={resolved}
         alt={alt}
         className="max-h-40 w-full rounded-lg border border-brand-gray object-contain bg-brand-gray/20"
       />
       <a
-        href={displaySrc}
+        href={resolved}
         target="_blank"
         rel="noopener noreferrer"
         className="mt-1 inline-block text-xs text-brand-gold hover:underline"

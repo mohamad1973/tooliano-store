@@ -3,7 +3,7 @@ import "server-only";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db/prisma";
 import { APPROVAL_STATUS } from "@/lib/db/constants";
-import { normalizeProductImageSrc } from "@/lib/product-image-src";
+import { resolveSubmissionDisplayImageUrl } from "@/lib/submission-display-image";
 import type { ProductImage } from "@/types/product";
 
 export type SubmissionCampaignView = {
@@ -47,7 +47,10 @@ export async function fetchSubmissionCampaignById(
     return null;
   }
 
-  const imageSrc = normalizeProductImageSrc(row.productImageUrl);
+  const imageSrc = await resolveSubmissionDisplayImageUrl(
+    row.productImageUrl,
+    row.wooProductId,
+  );
   const images: ProductImage[] = imageSrc
     ? [{ id: 0, src: imageSrc, alt: row.productName }]
     : [];

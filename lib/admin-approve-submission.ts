@@ -5,6 +5,7 @@ import {
   APPROVAL_STATUS,
   DEFAULT_CAMPAIGN_DAYS,
 } from "@/lib/db/constants";
+import { ensureSubmissionImageOnWordPress } from "@/lib/submission-image-persist";
 import {
   formatValidationIssues,
   validateSubmissionForApproval,
@@ -65,7 +66,7 @@ export async function approveProductSubmission(
       ? Math.round(submission.suggestedGroupPrice * 0.86 * 100) / 100
       : null;
 
-  const updated = await prisma.productSubmission.update({
+  let updated = await prisma.productSubmission.update({
     where: { id: submissionId },
     data: {
       status: APPROVAL_STATUS.APPROVED,
@@ -79,6 +80,15 @@ export async function approveProductSubmission(
         : {}),
     },
   });
+
+  try {
+    await ensureSubmissionImageOnWordPress(updated);
+    updated = await prisma.productSubmission.findUniqueOrThrow({
+      where: { id: submissionId },
+    });
+  } catch (e) {
+    console.error("[approveProductSubmission] image persist:", e);
+  }
 
   return { ok: true, submission: updated };
 }

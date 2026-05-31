@@ -2,7 +2,7 @@ import "server-only";
 
 import { prisma } from "@/lib/db/prisma";
 import { APPROVAL_STATUS } from "@/lib/db/constants";
-import { normalizeProductImageSrc } from "@/lib/product-image-src";
+import { resolveSubmissionDisplayImageUrl } from "@/lib/submission-display-image";
 import { fetchProductIdsInCategory } from "@/lib/products";
 import type { Prisma } from "@prisma/client";
 
@@ -29,18 +29,24 @@ type SubmissionRow = Prisma.ProductSubmissionGetPayload<{
   include: typeof submissionInclude;
 }>;
 
-function mapSubmissionRows(rows: SubmissionRow[]): GroupBuyOpportunity[] {
-  return rows
-    .filter(
-      (r) =>
-        r.suggestedRetailPrice != null && r.suggestedGroupPrice != null,
-    )
-    .map((row) => ({
+async function mapSubmissionRows(
+  rows: SubmissionRow[],
+): Promise<GroupBuyOpportunity[]> {
+  const filtered = rows.filter(
+    (r) =>
+      r.suggestedRetailPrice != null && r.suggestedGroupPrice != null,
+  );
+
+  return Promise.all(
+    filtered.map(async (row) => ({
       id: row.id,
       productName: row.productName,
       productType: row.productType,
       productCondition: row.productCondition,
-      productImageUrl: normalizeProductImageSrc(row.productImageUrl),
+      productImageUrl: await resolveSubmissionDisplayImageUrl(
+        row.productImageUrl,
+        row.wooProductId,
+      ),
       vendorCompanyName:
         row.vendor.vendorProfile?.companyName ?? row.vendor.username,
       targetQuantity: row.suggestedQuantity,
@@ -49,7 +55,8 @@ function mapSubmissionRows(rows: SubmissionRow[]): GroupBuyOpportunity[] {
       suggestedRetailPrice: row.suggestedRetailPrice!,
       suggestedGroupPrice: row.suggestedGroupPrice!,
       wooProductId: row.wooProductId,
-    }));
+    })),
+  );
 }
 
 function activeSubmissionWhere(
@@ -74,7 +81,7 @@ export async function fetchActiveGroupBuyOpportunities(): Promise<
     include: submissionInclude,
     orderBy: { reviewedAt: "desc" },
   });
-  return mapSubmissionRows(rows);
+  return await mapSubmissionRows(rows);
 }
 
 /** فرص شراء جماعي لمنتجات تنتمي لتصنيف WooCommerce. */
@@ -89,5 +96,5 @@ export async function fetchActiveGroupBuyOpportunitiesForCategory(
     include: submissionInclude,
     orderBy: { reviewedAt: "desc" },
   });
-  return mapSubmissionRows(rows);
+  return await mapSubmissionRows(rows);
 }

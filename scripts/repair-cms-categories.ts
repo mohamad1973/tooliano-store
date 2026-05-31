@@ -13,11 +13,12 @@ import {
   normalizeCategoryHref,
 } from "../lib/category-href";
 import { slugFromLabel } from "../lib/cms/nav-menu-slug";
+import type { ProductCategoryNavItem } from "../types/category";
 import { loadEnvLocal, requireEnv } from "./lib/load-env-local";
 
 type WooCat = { id: number; name: string; slug: string; parent: number; menu_order?: number };
 
-async function fetchWooCategories(): Promise<{ id: number; name: string; slug: string }[]> {
+async function fetchWooCategories(): Promise<ProductCategoryNavItem[]> {
   const baseURL = requireEnv("WC_BASE_URL").replace(/\/$/, "");
   const key = requireEnv("WC_CONSUMER_KEY");
   const secret = requireEnv("WC_CONSUMER_SECRET");
@@ -42,7 +43,9 @@ async function fetchWooCategories(): Promise<{ id: number; name: string; slug: s
 
   const parents = cleaned.filter((r) => r.parent === 0);
   const chosen = parents.length > 0 ? parents : cleaned;
-  return chosen.slice(0, 28).map((r) => ({ id: r.id, name: r.name, slug: r.slug }));
+  return chosen
+    .slice(0, 28)
+    .map((r) => ({ id: r.id, name: r.name, slug: r.slug, count: 0 }));
 }
 
 async function main() {

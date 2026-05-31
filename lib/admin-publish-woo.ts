@@ -2,6 +2,7 @@ import "server-only";
 
 import { prisma } from "@/lib/db/prisma";
 import { APPROVAL_STATUS, WOO_SYNC_STATUS } from "@/lib/db/constants";
+import { syncSubmissionImageFromWooProduct } from "@/lib/submission-image-persist";
 import { createWooProductFromSubmission } from "@/lib/woo-create-product";
 import { formatWooCommerceError } from "@/lib/woo-error-message";
 import {
@@ -53,7 +54,7 @@ export async function publishSubmissionToWooCommerce(
 
   try {
     const created = await createWooProductFromSubmission(submission);
-    const updated = await prisma.productSubmission.update({
+    let updated = await prisma.productSubmission.update({
       where: { id: submissionId },
       data: {
         wooProductId: created.wooProductId,
@@ -61,6 +62,19 @@ export async function publishSubmissionToWooCommerce(
         wooSyncError: null,
       },
     });
+
+    try {
+      await syncSubmissionImageFromWooProduct(
+        submissionId,
+        created.wooProductId,
+      );
+      updated = await prisma.productSubmission.findUniqueOrThrow({
+        where: { id: submissionId },
+      });
+    } catch (e) {
+      console.error("[publishSubmissionToWooCommerce] image sync:", e);
+    }
+
     return {
       ok: true,
       wooProductId: created.wooProductId,
