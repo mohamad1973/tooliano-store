@@ -8,6 +8,16 @@ const nextConfig: NextConfig = {
         hostname: "tooliano.com",
         pathname: "/wp-content/uploads/**",
       },
+      {
+        protocol: "http",
+        hostname: "localhost",
+        pathname: "/uploads/vendors/**",
+      },
+      {
+        protocol: "http",
+        hostname: "127.0.0.1",
+        pathname: "/uploads/vendors/**",
+      },
     ],
   },
 };

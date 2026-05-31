@@ -46,3 +46,17 @@ export type Product = {
   rating: number;
   ratingCount: number;
 };
+
+export type ProductImage = {
+  id: number;
+  src: string;
+  alt: string;
+};
+
+/** منتج كامل للاندنج — صور متعددة + أوصاف */
+export type ProductDetail = Product & {
+  images: ProductImage[];
+  shortDescription: string;
+  descriptionHtml: string;
+  sku: string;
+};

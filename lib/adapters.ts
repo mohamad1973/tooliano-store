@@ -1,4 +1,4 @@
-import type { Product, WCProduct } from "@/types/product";
+import type { Product, ProductDetail, WCProduct } from "@/types/product";
 
 function parsePrice(value: string): number {
   const n = Number.parseFloat(value);
@@ -36,4 +36,21 @@ export function mapProduct(raw: WCProduct): Product {
 
 export function mapProducts(raw: WCProduct[]): Product[] {
   return raw.map(mapProduct);
+}
+
+export function mapProductDetail(raw: WCProduct): ProductDetail {
+  const base = mapProduct(raw);
+  const images = raw.images.map((img) => ({
+    id: img.id,
+    src: img.src,
+    alt: img.alt || raw.name,
+  }));
+
+  return {
+    ...base,
+    images,
+    shortDescription: raw.short_description?.trim() ?? "",
+    descriptionHtml: raw.description?.trim() ?? "",
+    sku: raw.sku?.trim() ?? "",
+  };
 }

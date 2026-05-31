@@ -35,6 +35,13 @@ yarn-error.log*
 
 # nested repo for env backup (see tolliano/)
 /tolliano/
+/tooliano-store/
+
+# أسرار — لا ترفع
+Application Password
+
+# sqlite متداخل (خطأ مسار)
+/prisma/prisma/
 
 # vercel
 .vercel
@@ -42,3 +49,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# prisma sqlite
+/prisma/dev.db
+/prisma/dev.db-journal
+
+# صور منتجات الفيندور المرفوعة محلياً (عند عدم استخدام WordPress)
+/public/uploads/vendors/*
+!/public/uploads/vendors/.gitkeep
+
+.vercel

@@ -1,11 +1,23 @@
 @import "tailwindcss";
 
+/* Black and Gold Elegance */
 :root {
-  --background: #fafafa;
-  --foreground: #18181b;
+  --brand-white: #ffffff;
+  --brand-gray: #e5e5e5;
+  --brand-gold: #fca311;
+  --brand-navy: #14213d;
+  --brand-black: #000000;
+
+  --background: var(--brand-white);
+  --foreground: var(--brand-navy);
 }
 
 @theme inline {
+  --color-brand-white: var(--brand-white);
+  --color-brand-gray: var(--brand-gray);
+  --color-brand-gold: var(--brand-gold);
+  --color-brand-navy: var(--brand-navy);
+  --color-brand-black: var(--brand-black);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-cairo), ui-sans-serif, system-ui, sans-serif;
@@ -14,4 +26,26 @@
 body {
   background: var(--background);
   color: var(--foreground);
+}
+
+/* توب بار: حركة من الشمال إلى اليمين (LTR) */
+@keyframes top-marquee-lr {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100vw);
+  }
+}
+
+.top-marquee-line {
+  will-change: transform;
+  animation: top-marquee-lr 32s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .top-marquee-line {
+    animation: none;
+    transform: none;
+  }
 }

@@ -1,0 +1,75 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  role         String
+  /// رقم الموبايل الموحد (مشتري/تاجر/أدمن)
+  phone        String?
+  email        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  vendorProfile      VendorProfile?
+  productSubmissions ProductSubmission[] @relation("VendorSubmissions")
+}
+
+model VendorProfile {
+  id                      String    @id @default(cuid())
+  userId                  String    @unique
+  user                    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName             String
+  contactName             String
+  phone                   String
+  contactEmail            String
+  address                 String
+  businessType            String
+  teamSize                Int
+  productTypesDescription String
+  status                  String    @default("PENDING")
+  adminNote               String?
+  reviewedAt              DateTime?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+}
+
+model ProductSubmission {
+  id                   String    @id @default(cuid())
+  vendorId             String
+  vendor               User      @relation("VendorSubmissions", fields: [vendorId], references: [id], onDelete: Cascade)
+  productName          String
+  productType          String
+  productCondition     String    @default("NEW")
+  productDescription   String    @default("")
+  specWatts            String?
+  specVoltage          String?
+  specCapacity         String?
+  specPower            String?
+  specColor            String?
+  specExtra            String?
+  outletReason         String?
+  suggestedQuantity    Int
+  suggestedRetailPrice Float?
+  suggestedGroupPrice  Float?
+  productImageUrl      String?
+  status               String    @default("PENDING")
+  adminNote            String?
+  reviewedAt           DateTime?
+  wooProductId         Int?
+  campaignEndsAt       DateTime?
+  reservedQuantity     Int       @default(0)
+  publishedOnStore     Boolean   @default(false)
+  wooSyncStatus        String    @default("none")
+  wooSyncError         String?
+  idempotencyKey       String?   @unique
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+}
