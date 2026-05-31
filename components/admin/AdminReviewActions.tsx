@@ -68,6 +68,26 @@ export function AdminReviewActions({
     }
   }
 
+  async function syncWoo() {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/admin/submissions/${id}/sync-woo`, {
+        method: "POST",
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? "فشل التحديث على WordPress");
+        return;
+      }
+      router.refresh();
+    } catch {
+      setError("تعذّر الاتصال بالخادم");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function publishToWoo() {
     setLoading(true);
     setError(null);
@@ -138,9 +158,19 @@ export function AdminReviewActions({
     return (
       <div className="mt-3 space-y-2 border-t border-brand-gray pt-3">
         {wooProductId ? (
-          <p className="text-xs text-emerald-700">
-            منشور على WordPress #{wooProductId}
-          </p>
+          <>
+            <p className="text-xs text-emerald-700">
+              منشور على WordPress #{wooProductId}
+            </p>
+            <button
+              type="button"
+              disabled={loading}
+              onClick={syncWoo}
+              className="rounded-lg border border-brand-navy px-3 py-1.5 text-xs font-semibold text-brand-navy hover:bg-brand-gray disabled:opacity-60"
+            >
+              تحديث على WordPress
+            </button>
+          </>
         ) : (
           <>
             {!wpMediaConfigured ? (

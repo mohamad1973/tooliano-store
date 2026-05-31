@@ -3,6 +3,7 @@ import { DashboardShell } from "@/components/dashboard/DashboardShell";
 import { VendorProductForm } from "@/components/vendor/VendorProductForm";
 import { VendorSubmissionEditForm } from "@/components/vendor/VendorSubmissionEditForm";
 import { APPROVAL_STATUS } from "@/lib/db/constants";
+import { canVendorEditSubmission } from "@/lib/vendor-submission-edit";
 import {
   productConditionBadgeClass,
   productConditionLabel,
@@ -125,12 +126,18 @@ export default async function VendorDashboardPage() {
                   </div>
                 </div>
                 {item.status === APPROVAL_STATUS.APPROVED ? (
-                  <Link
-                    href={`/campaign/offer/${item.id}`}
-                    className="mt-2 inline-block text-xs font-semibold text-brand-gold hover:underline"
-                  >
-                    عرض الصفحة العامة للحملة ←
-                  </Link>
+                  <>
+                    <p className="mt-2 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
+                      تمت الموافقة على هذا المنتج — لا يمكنك تعديل التفاصيل أو
+                      الصور. للتغيير تواصل مع الإدارة.
+                    </p>
+                    <Link
+                      href={`/campaign/offer/${item.id}`}
+                      className="mt-2 inline-block text-xs font-semibold text-brand-gold hover:underline"
+                    >
+                      عرض الصفحة العامة للحملة ←
+                    </Link>
+                  </>
                 ) : null}
                 <p className="mt-2 text-sm text-brand-navy/80 line-clamp-3">
                   {item.productDescription}
@@ -145,12 +152,12 @@ export default async function VendorDashboardPage() {
                     : ""}
                 </p>
                 {item.adminNote &&
-                item.status !== APPROVAL_STATUS.NEEDS_REVISION ? (
+                !canVendorEditSubmission(item.status) ? (
                   <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900">
                     ملاحظة الإدارة: {item.adminNote}
                   </p>
                 ) : null}
-                {item.status === APPROVAL_STATUS.NEEDS_REVISION ? (
+                {canVendorEditSubmission(item.status) ? (
                   <VendorSubmissionEditForm submission={item} />
                 ) : null}
               </li>

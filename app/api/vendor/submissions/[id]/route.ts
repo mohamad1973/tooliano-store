@@ -8,6 +8,7 @@ import {
 import { parseSubmissionProductBody } from "@/lib/submission-product-fields";
 import { toSubmissionUpdateData } from "@/lib/submission-prisma-data";
 import { APPROVAL_STATUS, USER_ROLES } from "@/lib/db/constants";
+import { canVendorEditSubmission } from "@/lib/vendor-submission-edit";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -26,10 +27,17 @@ export async function PATCH(request: Request, { params }: Params) {
     return NextResponse.json({ error: "غير موجود" }, { status: 404 });
   }
 
-  if (
-    existing.status !== APPROVAL_STATUS.NEEDS_REVISION &&
-    existing.status !== APPROVAL_STATUS.PENDING
-  ) {
+  if (existing.status === APPROVAL_STATUS.APPROVED) {
+    return NextResponse.json(
+      {
+        error:
+          "تمت الموافقة على المنتج — لا يمكن التعديل. تواصل مع الإدارة إن احتجت تغييراً.",
+      },
+      { status: 400 },
+    );
+  }
+
+  if (!canVendorEditSubmission(existing.status)) {
     return NextResponse.json(
       { error: "لا يمكن تعديل هذا الطلب في حالته الحالية" },
       { status: 400 },
@@ -51,13 +59,16 @@ export async function PATCH(request: Request, { params }: Params) {
       );
     }
 
+    const resubmit =
+      existing.status === APPROVAL_STATUS.NEEDS_REVISION ||
+      existing.status === APPROVAL_STATUS.REJECTED;
+
     const updated = await prisma.productSubmission.update({
       where: { id },
       data: {
         ...toSubmissionUpdateData(input),
         status: APPROVAL_STATUS.PENDING,
-        adminNote: null,
-        reviewedAt: null,
+        ...(resubmit ? { adminNote: null, reviewedAt: null } : {}),
       },
     });
 

@@ -3,9 +3,11 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { VendorProductDetailsFields } from "@/components/vendor/VendorProductDetailsFields";
+import { APPROVAL_STATUS } from "@/lib/db/constants";
 
 type SubmissionData = {
   id: string;
+  status: string;
   productName: string;
   productType: string;
   productCondition: string;
@@ -72,7 +74,13 @@ export function VendorSubmissionEditForm({
       onSubmit={onSubmit}
       className="mt-4 space-y-3 rounded-xl border-2 border-sky-200 bg-sky-50/50 p-4"
     >
-      <h3 className="text-sm font-bold text-sky-900">تعديل المنتج وإعادة الإرسال</h3>
+      <h3 className="text-sm font-bold text-sky-900">
+        {submission.status === APPROVAL_STATUS.PENDING
+          ? "تعديل المنتج قبل المراجعة"
+          : submission.status === APPROVAL_STATUS.REJECTED
+            ? "تعديل المنتج وإعادة الإرسال بعد الرفض"
+            : "تعديل المنتج وإعادة الإرسال"}
+      </h3>
       {submission.adminNote ? (
         <p className="rounded-lg bg-white px-3 py-2 text-sm text-brand-navy">
           <span className="font-semibold">ملاحظة الإدارة: </span>
@@ -111,7 +119,9 @@ export function VendorSubmissionEditForm({
           ? "جاري رفع الصورة…"
           : loading
             ? "جاري الإرسال…"
-            : "حفظ وإعادة إرسال للمراجعة"}
+            : submission.status === APPROVAL_STATUS.PENDING
+              ? "حفظ التعديلات"
+              : "حفظ وإعادة إرسال للمراجعة"}
       </button>
     </form>
   );

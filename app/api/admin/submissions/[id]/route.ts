@@ -1,10 +1,43 @@
 import { NextResponse } from "next/server";
+import { adminUpdateSubmissionContent } from "@/lib/admin-update-submission";
 import { approveProductSubmission } from "@/lib/admin-approve-submission";
 import { getSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/prisma";
 import { APPROVAL_STATUS, USER_ROLES } from "@/lib/db/constants";
 
 type Params = { params: Promise<{ id: string }> };
+
+export async function PUT(request: Request, { params }: Params) {
+  const session = await getSession();
+  if (!session || session.role !== USER_ROLES.ADMIN) {
+    return NextResponse.json({ error: "غير مصرح" }, { status: 403 });
+  }
+
+  const { id } = await params;
+  const body = (await request.json()) as Record<string, unknown> & {
+    syncWoo?: boolean;
+  };
+
+  const result = await adminUpdateSubmissionContent(id, body, {
+    syncWoo: body.syncWoo === true,
+  });
+
+  if (!result.ok) {
+    return NextResponse.json(
+      {
+        error: result.error,
+        validationIssues: result.validationIssues,
+      },
+      { status: 400 },
+    );
+  }
+
+  return NextResponse.json({
+    ok: true,
+    submission: result.submission,
+    wooSynced: result.wooSynced,
+  });
+}
 
 export async function PATCH(request: Request, { params }: Params) {
   const session = await getSession();

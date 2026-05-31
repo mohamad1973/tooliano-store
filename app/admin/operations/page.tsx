@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AdminSubmissionEditForm } from "@/components/admin/AdminSubmissionEditForm";
 import { AdminReviewActions } from "@/components/admin/AdminReviewActions";
 import { AdminSubmissionImagePreview } from "@/components/admin/AdminSubmissionImagePreview";
 import { PersistProductImagesPanel } from "@/components/admin/PersistProductImagesPanel";
@@ -154,6 +155,7 @@ export default async function AdminOperationsPage() {
                   </Link>
                 </p>
               ) : null}
+              <AdminSubmissionEditForm submission={item} />
               <AdminReviewActions
                 kind="submission"
                 id={item.id}
