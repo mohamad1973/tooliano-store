@@ -1,56 +1,44 @@
-# إعداد رفع صور المنتج على WordPress
+# صور المنتجات و WordPress
 
-مسار الرفع الموحد: **`POST /api/upload`** (تاجر أو أدمن مسجّل دخول) → **وسائط WordPress** → رابط `source_url`.
+## التدفق الافتراضي (موصى به)
 
-## 1) إنشاء Application Password
+1. **التاجر أو الأدمن** يلصق **رابط صورة** (`https://...`) في نموذج المنتج — مثلاً من مكتبة وسائط tooliano.com بعد رفعها يدوياً، أو أي رابط عام.
+2. يحفظ الطلب في قاعدة البيانات (`productImageUrl`).
+3. **الأدمن** يوافق ثم يضغط **«نشر على WordPress»** — يُنشأ منتج WooCommerce ويُستخدم الرابط (أو تُرفع الصور المحلية القديمة عند النشر فقط).
 
-1. ادخل [https://tooliano.com/wp-admin](https://tooliano.com/wp-admin) بحساب **مدير**.
-2. **المستخدمون** → المستخدم → **الملف الشخصي**.
-3. **Application Passwords** → اسم التطبيق: `Tooliano Store` → **Add New**.
-4. انسخ كلمة المرور فوراً (مرة واحدة).
+لا حاجة لـ Application Password عند **لصق الرابط** فقط.
 
-## 2) متغيرات البيئة
+## رفع ملف من الجهاز (اختياري)
 
-في `.env.local` محلياً وفي **Vercel → Environment Variables**:
+في النموذج: قسم مطوي **«رفع من الجهاز (اختياري)»** — يستدعي `POST /api/upload` أو مسارات التسجيل.
+
+يتطلب على Vercel (للرفع التلقائي إلى وسائط WP):
 
 ```env
 WP_URL=https://tooliano.com
 WP_USERNAME=اسم_الدخول_Username
-WP_APP_PASSWORD=xxxx xxxx xxxx xxxx
+WP_APP_PASSWORD=Application_Password
+```
 
-WC_BASE_URL=https://tooliano.com
+**أسماء بديلة:** `WC_BASE_URL`، `WP_MEDIA_USER`.
+
+## نشر WooCommerce
+
+```env
 WC_CONSUMER_KEY=ck_...
 WC_CONSUMER_SECRET=cs_...
 ```
 
-**أسماء بديلة مدعومة:** `WC_BASE_URL` بدل `WP_URL`، `WP_MEDIA_USER` بدل `WP_USERNAME`.
-
-- `WP_USERNAME` = **Username** في ووردبريس (وليس البريد ولا اسم التطبيق).
-- `WP_APP_PASSWORD` = Application Password فقط (ليس كلمة دخول wp-admin).
-- يمكن لصق كلمة التطبيق **مع مسافات**.
-
-## 3) التحقق
+## التحقق من رفع WP (اختياري)
 
 ```bash
 npm run check:wp-media
-npm run dev
 ```
-
-## 4) الاستخدام
-
-| من | المسار |
-|----|--------|
-| تاجر | `/vendor` → رفع صورة → `/api/upload` |
-| أدمن | `/admin/operations` → تعديل منتج → `/api/upload` |
-| تسجيل تاجر | `/api/register/vendor-upload-image` (بدون جلسة) |
-
-**نشر المنتج على WooCommerce:** زر منفصل — `WC_CONSUMER_KEY` / `WC_CONSUMER_SECRET`.
 
 ## استكشاف الأخطاء
 
 | المشكلة | الحل |
 |---------|------|
-| `401` / `403` | راجع `WP_USERNAME` و Application Password |
-| «غير مسموح لك بإنشاء مقالات» | حساب **Administrator** + Application Password جديد |
-| فشل على Vercel فقط | Redeploy بعد تعديل المتغيرات |
-| `check:wp-media` ينجح والرفع يفشل | تأكد أن النشر الأخير على Vercel محدّث |
+| الصورة لا تظهر | تأكد أن الرابط `https` يفتح في المتصفح |
+| فشل «نشر على WordPress» | راجع مفاتيح Woo + صلاحية الرابط |
+| رفع ملف اختياري يفشل | راجع `WP_USERNAME` و Application Password ثم Redeploy |

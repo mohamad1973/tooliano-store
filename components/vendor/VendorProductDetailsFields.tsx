@@ -32,9 +32,10 @@ type Props = {
   showPricing?: boolean;
   showQuantity?: boolean;
   showImage?: boolean;
-  /** للتسجيل قبل الدخول */
+  /** للتسجيل: /api/register/vendor-upload-image */
   imageUploadEndpoint?: string;
   onImageUploadStateChange?: (uploading: boolean) => void;
+  showOptionalFileUpload?: boolean;
 };
 
 export function VendorProductDetailsFields({
@@ -44,6 +45,7 @@ export function VendorProductDetailsFields({
   showImage = true,
   imageUploadEndpoint,
   onImageUploadStateChange,
+  showOptionalFileUpload = true,
 }: Props) {
   const initialCondition =
     defaults.productCondition === PRODUCT_CONDITION.OUTLET
@@ -193,6 +195,7 @@ export function VendorProductDetailsFields({
           defaultUrl={defaults.productImageUrl}
           uploadEndpoint={imageUploadEndpoint}
           onUploadStateChange={onImageUploadStateChange}
+          showOptionalFileUpload={showOptionalFileUpload}
         />
       ) : null}
     </div>

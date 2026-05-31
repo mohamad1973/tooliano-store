@@ -18,10 +18,10 @@ export function validatePublicImageUrl(
 ): string | null {
   if (!url?.trim()) return "رابط الصورة مطلوب";
   if (LOCAL_PATH_RE.test(url.trim())) {
-    return "مسار اللابتوب المحلي غير مقبول — ارفع الصورة من جهازك";
+    return "مسار اللابتوب المحلي غير مقبول — استخدم رابط https عاماً";
   }
   if (!isValidProductImageUrl(url)) {
-    return "صورة المنتج غير صالحة — ارفع ملفاً من جهازك";
+    return "أدخل رابط https صالح للصورة";
   }
   return null;
 }

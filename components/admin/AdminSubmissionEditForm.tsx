@@ -108,8 +108,8 @@ export function AdminSubmissionEditForm({
         تعديل المنتج (الإدارة)
       </h3>
       <p className="text-xs text-brand-navy/60">
-        رفع الصورة = وسائط WordPress (Application Password). نشر المنتج =
-        WooCommerce من الزر المنفصل — ليس عند اختيار الملف فقط.
+        الصورة برابط https (أو رفع اختياري من الجهاز). نشر المنتج على WooCommerce
+        من زر «نشر على WordPress» — وليس عند لصق الرابط.
       </p>
 
       <form ref={formRef} className="space-y-3" onSubmit={(e) => e.preventDefault()}>
@@ -131,7 +131,6 @@ export function AdminSubmissionEditForm({
             suggestedGroupPrice: submission.suggestedGroupPrice,
             productImageUrl: submission.productImageUrl,
           }}
-          imageUploadEndpoint="/api/upload"
           onImageUploadStateChange={setImageUploading}
         />
 
