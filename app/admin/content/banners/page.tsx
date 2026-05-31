@@ -1,5 +1,6 @@
 import { AdminContentSubnav } from "@/components/admin/cms/AdminContentSubnav";
 import { BannersEditor } from "@/components/admin/cms/BannersEditor";
+import { WooCategorySyncButton } from "@/components/admin/cms/WooCategorySyncButton";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { requireAdmin } from "@/lib/auth/guards";
 import { prisma } from "@/lib/db/prisma";
@@ -15,6 +16,7 @@ export default async function AdminContentBannersPage() {
   return (
     <AdminShell title="البنرات" subtitle="صور الصفحة الرئيسية">
       <AdminContentSubnav active="/admin/content/banners" />
+      <WooCategorySyncButton />
       <BannersEditor initial={items} />
     </AdminShell>
   );

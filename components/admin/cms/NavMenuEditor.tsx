@@ -142,6 +142,29 @@ export function NavMenuEditor({ initial }: { initial: Item[] }) {
               <option value="external">خارجي</option>
               <option value="category">تصنيف</option>
             </select>
+            {item.linkType === "category" ? (
+              <input
+                value={item.categorySlug ?? ""}
+                onChange={(e) =>
+                  setItems((prev) =>
+                    prev.map((i) =>
+                      i.id === item.id
+                        ? {
+                            ...i,
+                            categorySlug: e.target.value || null,
+                            href: e.target.value
+                              ? `/products?category=${encodeURIComponent(e.target.value)}`
+                              : i.href,
+                          }
+                        : i,
+                    ),
+                  )
+                }
+                className="rounded-lg border px-2 py-1 text-sm sm:col-span-2"
+                placeholder="slug التصنيف (مثل tools)"
+                dir="ltr"
+              />
+            ) : null}
             <div className="flex items-center gap-2">
               <label className="flex items-center gap-1 text-xs">
                 <input

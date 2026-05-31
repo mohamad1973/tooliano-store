@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db/prisma";
 import { requireApiAdmin, isSessionResponse } from "@/lib/auth/api-session";
 import { cmsMutationResponse, parseBody } from "@/lib/cms/admin-api";
+import { normalizeNavMenuPayload } from "@/lib/cms/normalize-nav-menu-payload";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -18,14 +19,20 @@ export async function PUT(request: Request, { params }: Params) {
   }>(request);
   if (body instanceof Response) return body;
 
+  const normalized = normalizeNavMenuPayload(body);
+
   await prisma.navMenuItem.update({
     where: { id },
     data: {
-      ...(body.label !== undefined ? { label: body.label.trim() } : {}),
-      ...(body.href !== undefined ? { href: body.href.trim() } : {}),
-      ...(body.linkType !== undefined ? { linkType: body.linkType } : {}),
-      ...(body.categorySlug !== undefined
-        ? { categorySlug: body.categorySlug?.trim() || null }
+      ...(normalized.label !== undefined
+        ? { label: normalized.label.trim() }
+        : {}),
+      ...(normalized.href !== undefined ? { href: normalized.href.trim() } : {}),
+      ...(normalized.linkType !== undefined
+        ? { linkType: normalized.linkType }
+        : {}),
+      ...(normalized.categorySlug !== undefined
+        ? { categorySlug: normalized.categorySlug?.trim() || null }
         : {}),
       ...(body.enabled !== undefined ? { enabled: body.enabled } : {}),
     },

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { GroupBuyOpportunitiesForCategory } from "@/components/group-buy/GroupBuyOpportunitiesForCategory";
 import { ProductCard } from "@/components/ProductCard";
 import { SiteHeader } from "@/components/SiteHeader";
+import Link from "next/link";
 import { fetchCategoryBySlug } from "@/lib/categories";
 import { DEFAULT_PER_PAGE, SITE_NAME } from "@/lib/constants";
 import { fetchProducts } from "@/lib/products";
@@ -92,7 +94,10 @@ export default async function ProductsPage({ searchParams }: Props) {
 
         {invalidCategory ? (
           <div className="mb-6 rounded-lg border border-brand-gold/50 bg-brand-gold/10 p-4 text-sm text-brand-navy">
-            التصنيف المطلوب غير موجود — يتم عرض جميع المنتجات.
+            التصنيف «{slug}» غير موجود في WooCommerce — يتم عرض جميع المنتجات.{" "}
+            <Link href="/products" className="font-semibold text-brand-gold underline">
+              عرض الكل
+            </Link>
           </div>
         ) : null}
 
@@ -117,6 +122,13 @@ export default async function ProductsPage({ searchParams }: Props) {
             </li>
           ))}
         </ul>
+
+        {categoryId != null && categoryLabel ? (
+          <GroupBuyOpportunitiesForCategory
+            categoryId={categoryId}
+            categoryName={categoryLabel}
+          />
+        ) : null}
       </main>
     </>
   );

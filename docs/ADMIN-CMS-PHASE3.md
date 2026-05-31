@@ -17,12 +17,14 @@
 
 ## المنيو
 
-- الهيدر يقرأ من `getNavMenuItems()` فقط — **لا** WooCommerce تلقائي.
-- Seed أولي: «الكل» + أول ٨ تصنيفات من Woo (مرة واحدة).
+- الهيدر يقرأ من `getNavMenuItems()` — يُعاد بناء روابط التصنيف من `categorySlug` الحالي في Woo.
+- بعد تغيير slug في ووردبريس: زر **مزامنة التصنيفات** في `/admin/content/menu` أو `/admin/content/banners`.
+- راجع [WOOCOMMERCE-CATEGORIES.md](./WOOCOMMERCE-CATEGORIES.md) (روابط دائمة، redirects، اختبار slugs).
 
 ## API إضافية
 
 - `/api/admin/cms/menu` + `[id]` + `reorder`
+- `/api/admin/cms/sync-woo-categories` — مزامنة slugs من Woo إلى المنيو والبنرات
 - `/api/admin/cms/page-blocks` + `[id]` + `reorder`
 - `sections/reorder` يقبل `orderedIds[]`
 

@@ -22,6 +22,7 @@ import {
 } from "@/lib/cms/defaults";
 import { PAGE_KEYS } from "@/lib/cms/page-blocks";
 import { sanitizeRichHtml } from "@/lib/cms/sanitize";
+import { resolveNavMenuItems } from "@/lib/cms/resolve-nav-menu";
 import { CMS_CACHE_TAG } from "@/lib/cms/revalidate";
 import type {
   FaqContent,
@@ -310,8 +311,8 @@ const cachedNavMenu = unstable_cache(loadNavMenuRaw, ["cms-nav-menu"], {
 });
 
 export async function getNavMenuItems(): Promise<NavMenuItemView[]> {
-  const items = await cachedNavMenu();
-  return items.filter((i) => i.enabled);
+  const items = (await cachedNavMenu()).filter((i) => i.enabled);
+  return resolveNavMenuItems(items);
 }
 
 async function loadThemeColorsRaw(): Promise<ThemeColorsView> {

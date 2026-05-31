@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db/prisma";
 import { requireApiAdmin, isSessionResponse } from "@/lib/auth/api-session";
 import { cmsMutationResponse, parseBody } from "@/lib/cms/admin-api";
+import { normalizeNavMenuPayload } from "@/lib/cms/normalize-nav-menu-payload";
 
 export async function GET() {
   const session = await requireApiAdmin();
@@ -27,13 +28,15 @@ export async function POST(request: Request) {
     return Response.json({ error: "الاسم والرابط مطلوبان" }, { status: 400 });
   }
 
+  const normalized = normalizeNavMenuPayload(body);
+
   const max = await prisma.navMenuItem.aggregate({ _max: { sortOrder: true } });
   const item = await prisma.navMenuItem.create({
     data: {
-      label: body.label.trim(),
-      href: body.href.trim(),
-      linkType: body.linkType ?? "internal",
-      categorySlug: body.categorySlug?.trim() || null,
+      label: normalized.label!.trim(),
+      href: normalized.href!.trim(),
+      linkType: normalized.linkType ?? "internal",
+      categorySlug: normalized.categorySlug?.trim() || null,
       sortOrder: (max._max.sortOrder ?? -1) + 1,
       enabled: true,
     },

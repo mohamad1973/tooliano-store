@@ -3,6 +3,8 @@ import "server-only";
 import { prisma } from "@/lib/db/prisma";
 import { APPROVAL_STATUS } from "@/lib/db/constants";
 import { normalizeProductImageSrc } from "@/lib/product-image-src";
+import { fetchProductIdsInCategory } from "@/lib/products";
+import type { Prisma } from "@prisma/client";
 
 export type GroupBuyOpportunity = {
   id: string;
@@ -19,25 +21,15 @@ export type GroupBuyOpportunity = {
   wooProductId: number | null;
 };
 
-export async function fetchActiveGroupBuyOpportunities(): Promise<
-  GroupBuyOpportunity[]
-> {
-  const now = new Date();
+const submissionInclude = {
+  vendor: { include: { vendorProfile: true } },
+} satisfies Prisma.ProductSubmissionInclude;
 
-  const rows = await prisma.productSubmission.findMany({
-    where: {
-      status: APPROVAL_STATUS.APPROVED,
-      publishedOnStore: true,
-      campaignEndsAt: { gt: now },
-    },
-    include: {
-      vendor: {
-        include: { vendorProfile: true },
-      },
-    },
-    orderBy: { reviewedAt: "desc" },
-  });
+type SubmissionRow = Prisma.ProductSubmissionGetPayload<{
+  include: typeof submissionInclude;
+}>;
 
+function mapSubmissionRows(rows: SubmissionRow[]): GroupBuyOpportunity[] {
   return rows
     .filter(
       (r) =>
@@ -58,4 +50,44 @@ export async function fetchActiveGroupBuyOpportunities(): Promise<
       suggestedGroupPrice: row.suggestedGroupPrice!,
       wooProductId: row.wooProductId,
     }));
+}
+
+function activeSubmissionWhere(
+  wooProductIds?: number[],
+): Prisma.ProductSubmissionWhereInput {
+  const now = new Date();
+  return {
+    status: APPROVAL_STATUS.APPROVED,
+    publishedOnStore: true,
+    campaignEndsAt: { gt: now },
+    ...(wooProductIds?.length
+      ? { wooProductId: { in: wooProductIds } }
+      : {}),
+  };
+}
+
+export async function fetchActiveGroupBuyOpportunities(): Promise<
+  GroupBuyOpportunity[]
+> {
+  const rows = await prisma.productSubmission.findMany({
+    where: activeSubmissionWhere(),
+    include: submissionInclude,
+    orderBy: { reviewedAt: "desc" },
+  });
+  return mapSubmissionRows(rows);
+}
+
+/** فرص شراء جماعي لمنتجات تنتمي لتصنيف WooCommerce. */
+export async function fetchActiveGroupBuyOpportunitiesForCategory(
+  categoryId: number,
+): Promise<GroupBuyOpportunity[]> {
+  const productIds = await fetchProductIdsInCategory(categoryId);
+  if (productIds.length === 0) return [];
+
+  const rows = await prisma.productSubmission.findMany({
+    where: activeSubmissionWhere(productIds),
+    include: submissionInclude,
+    orderBy: { reviewedAt: "desc" },
+  });
+  return mapSubmissionRows(rows);
 }

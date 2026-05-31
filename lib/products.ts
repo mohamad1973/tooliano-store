@@ -41,6 +41,34 @@ export async function fetchProducts(
   return { products, total };
 }
 
+const CATEGORY_PRODUCT_IDS_MAX_PAGES = 10;
+const CATEGORY_PRODUCT_IDS_PER_PAGE = 100;
+
+/** معرّفات منتجات Woo المنشورة في تصنيف معيّن (لربط الشراء الجماعي). */
+export async function fetchProductIdsInCategory(
+  categoryId: number,
+): Promise<number[]> {
+  const woo = createWooClient();
+  const ids: number[] = [];
+
+  for (let page = 1; page <= CATEGORY_PRODUCT_IDS_MAX_PAGES; page++) {
+    const response = await woo.get<WCProduct[]>("/products", {
+      params: {
+        category: categoryId,
+        per_page: CATEGORY_PRODUCT_IDS_PER_PAGE,
+        page,
+        status: "publish",
+      },
+    });
+    const rows = Array.isArray(response.data) ? response.data : [];
+    for (const row of rows) ids.push(row.id);
+    const totalPages = Number(response.headers["x-wp-totalpages"] ?? 1);
+    if (page >= totalPages || rows.length === 0) break;
+  }
+
+  return ids;
+}
+
 export async function fetchProductById(id: number): Promise<Product | null> {
   const woo = createWooClient();
   try {
