@@ -23,6 +23,9 @@ export type AdminSubmissionCardData = {
   suggestedQuantity: number;
   suggestedRetailPrice: number | null;
   suggestedGroupPrice: number | null;
+  dealDurationDays: number;
+  dealDurationHours: number;
+  dealDurationMinutes: number;
   vendorSettlementUnitPrice: number | null;
   productImageUrl: string | null;
   status: string;

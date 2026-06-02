@@ -21,6 +21,9 @@ type SubmissionData = {
   suggestedRetailPrice: number | null;
   suggestedGroupPrice: number | null;
   productImageUrl: string | null;
+  dealDurationDays: number;
+  dealDurationHours: number;
+  dealDurationMinutes: number;
   wooProductId: number | null;
 };
 
@@ -130,6 +133,9 @@ export function AdminSubmissionEditForm({
             suggestedRetailPrice: submission.suggestedRetailPrice,
             suggestedGroupPrice: submission.suggestedGroupPrice,
             productImageUrl: submission.productImageUrl,
+            dealDurationDays: submission.dealDurationDays,
+            dealDurationHours: submission.dealDurationHours,
+            dealDurationMinutes: submission.dealDurationMinutes,
           }}
           onImageUploadStateChange={setImageUploading}
         />

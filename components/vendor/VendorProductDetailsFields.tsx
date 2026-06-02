@@ -25,6 +25,9 @@ export type VendorProductDefaults = {
   suggestedRetailPrice?: number | null;
   suggestedGroupPrice?: number | null;
   productImageUrl?: string | null;
+  dealDurationDays?: number;
+  dealDurationHours?: number;
+  dealDurationMinutes?: number;
 };
 
 type Props = {
@@ -189,6 +192,43 @@ export function VendorProductDetailsFields({
           />
         </div>
       ) : null}
+
+      <fieldset className="space-y-3 rounded-xl border border-brand-gray/80 p-4">
+        <legend className="px-2 text-sm font-bold text-brand-navy">
+          مدة الديل (العد التنازلي)
+        </legend>
+        <p className="text-xs text-brand-navy/60">
+          يتم حساب وقت انتهاء الديل بناءً على هذه المدة بعد موافقة الإدارة.
+        </p>
+        <div className="grid gap-3 sm:grid-cols-3">
+          <AuthTextField
+            label="الأيام"
+            name="dealDurationDays"
+            type="number"
+            min={0}
+            defaultValue={defaults.dealDurationDays ?? 7}
+            required
+          />
+          <AuthTextField
+            label="الساعات"
+            name="dealDurationHours"
+            type="number"
+            min={0}
+            max={23}
+            defaultValue={defaults.dealDurationHours ?? 0}
+            required
+          />
+          <AuthTextField
+            label="الدقائق"
+            name="dealDurationMinutes"
+            type="number"
+            min={0}
+            max={59}
+            defaultValue={defaults.dealDurationMinutes ?? 0}
+            required
+          />
+        </div>
+      </fieldset>
 
       {showImage ? (
         <VendorProductImageField

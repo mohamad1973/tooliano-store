@@ -16,6 +16,9 @@ export type SubmissionProductInput = {
   suggestedRetailPrice: number | null;
   suggestedGroupPrice: number | null;
   productImageUrl: string | null;
+  dealDurationDays: number;
+  dealDurationHours: number;
+  dealDurationMinutes: number;
 };
 
 export function parseSubmissionProductBody(
@@ -47,6 +50,15 @@ export function parseSubmissionProductBody(
       ? Number.parseFloat(String(body.suggestedGroupPrice))
       : null,
     productImageUrl: String(body.productImageUrl ?? "").trim() || null,
+    dealDurationDays: Number.parseInt(String(body.dealDurationDays ?? "0"), 10),
+    dealDurationHours: Number.parseInt(
+      String(body.dealDurationHours ?? "0"),
+      10,
+    ),
+    dealDurationMinutes: Number.parseInt(
+      String(body.dealDurationMinutes ?? "0"),
+      10,
+    ),
   };
 }
 

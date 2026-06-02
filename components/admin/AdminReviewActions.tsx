@@ -111,6 +111,12 @@ export function AdminReviewActions({
     }
   }
 
+  const canRequestRevision =
+    kind === "submission" &&
+    (currentStatus === APPROVAL_STATUS.PENDING ||
+      currentStatus === APPROVAL_STATUS.NEEDS_REVISION ||
+      currentStatus === APPROVAL_STATUS.APPROVED);
+
   if (currentStatus === APPROVAL_STATUS.REJECTED && kind === "submission") {
     return (
       <div className="mt-3 border-t border-brand-gray pt-3">
@@ -204,6 +210,21 @@ export function AdminReviewActions({
           </>
         )}
         {error ? <p className="text-xs text-red-600">{error}</p> : null}
+        <textarea
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          placeholder="ملاحظة للبائع (مطلوبة عند طلب التعديل)"
+          rows={3}
+          className="w-full rounded-lg border border-brand-gray px-2 py-1.5 text-sm"
+        />
+        <button
+          type="button"
+          disabled={loading}
+          onClick={() => review(APPROVAL_STATUS.NEEDS_REVISION)}
+          className="rounded-lg bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-sky-700 disabled:opacity-60"
+        >
+          طلب تعديل
+        </button>
         <p className="text-[10px] text-brand-navy/50">
           المنتج يظهر في «فرص الشراء الجماعي» — النشر على WordPress اختياري
           ومستقل.
@@ -247,9 +268,7 @@ export function AdminReviewActions({
         <p className="whitespace-pre-wrap text-xs text-red-600">{error}</p>
       ) : null}
       <div className="flex flex-wrap gap-2">
-        {kind === "submission" &&
-        (currentStatus === APPROVAL_STATUS.PENDING ||
-          currentStatus === APPROVAL_STATUS.NEEDS_REVISION) ? (
+        {canRequestRevision ? (
           <button
             type="button"
             disabled={loading}

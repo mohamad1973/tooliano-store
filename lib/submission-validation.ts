@@ -25,6 +25,9 @@ type SubmissionForValidation = Pick<
   | "suggestedRetailPrice"
   | "suggestedGroupPrice"
   | "productImageUrl"
+  | "dealDurationDays"
+  | "dealDurationHours"
+  | "dealDurationMinutes"
 >;
 
 export function validateSubmissionForApproval(
@@ -103,6 +106,45 @@ export function validateSubmissionForApproval(
     issues.push({
       field: "suggestedGroupPrice",
       message: "سعر الجماعي يجب أن يكون أقل من السعر الفردي",
+    });
+  }
+  if (
+    !Number.isFinite(submission.dealDurationDays) ||
+    submission.dealDurationDays < 0
+  ) {
+    issues.push({
+      field: "dealDurationDays",
+      message: "عدد أيام الديل غير صالح",
+    });
+  }
+  if (
+    !Number.isFinite(submission.dealDurationHours) ||
+    submission.dealDurationHours < 0 ||
+    submission.dealDurationHours > 23
+  ) {
+    issues.push({
+      field: "dealDurationHours",
+      message: "عدد ساعات الديل يجب أن يكون بين 0 و 23",
+    });
+  }
+  if (
+    !Number.isFinite(submission.dealDurationMinutes) ||
+    submission.dealDurationMinutes < 0 ||
+    submission.dealDurationMinutes > 59
+  ) {
+    issues.push({
+      field: "dealDurationMinutes",
+      message: "عدد دقائق الديل يجب أن يكون بين 0 و 59",
+    });
+  }
+  const durationInMinutes =
+    submission.dealDurationDays * 24 * 60 +
+    submission.dealDurationHours * 60 +
+    submission.dealDurationMinutes;
+  if (!Number.isFinite(durationInMinutes) || durationInMinutes <= 0) {
+    issues.push({
+      field: "dealDuration",
+      message: "مدة الديل يجب أن تكون أكبر من صفر",
     });
   }
 

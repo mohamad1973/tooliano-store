@@ -31,6 +31,22 @@ export function toSubmissionCreateData(
         ? input.suggestedGroupPrice
         : null,
     productImageUrl: input.productImageUrl,
+    dealDurationDays:
+      Number.isFinite(input.dealDurationDays) && input.dealDurationDays >= 0
+        ? input.dealDurationDays
+        : 0,
+    dealDurationHours:
+      Number.isFinite(input.dealDurationHours) &&
+      input.dealDurationHours >= 0 &&
+      input.dealDurationHours <= 23
+        ? input.dealDurationHours
+        : 0,
+    dealDurationMinutes:
+      Number.isFinite(input.dealDurationMinutes) &&
+      input.dealDurationMinutes >= 0 &&
+      input.dealDurationMinutes <= 59
+        ? input.dealDurationMinutes
+        : 0,
     ...extra,
   };
 }
@@ -62,5 +78,21 @@ export function toSubmissionUpdateData(
         ? input.suggestedGroupPrice
         : null,
     productImageUrl: input.productImageUrl,
+    dealDurationDays:
+      Number.isFinite(input.dealDurationDays) && input.dealDurationDays >= 0
+        ? input.dealDurationDays
+        : 0,
+    dealDurationHours:
+      Number.isFinite(input.dealDurationHours) &&
+      input.dealDurationHours >= 0 &&
+      input.dealDurationHours <= 23
+        ? input.dealDurationHours
+        : 0,
+    dealDurationMinutes:
+      Number.isFinite(input.dealDurationMinutes) &&
+      input.dealDurationMinutes >= 0 &&
+      input.dealDurationMinutes <= 59
+        ? input.dealDurationMinutes
+        : 0,
   };
 }

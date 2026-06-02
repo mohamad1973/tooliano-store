@@ -23,6 +23,9 @@ type SubmissionData = {
   suggestedRetailPrice: number | null;
   suggestedGroupPrice: number | null;
   productImageUrl: string | null;
+  dealDurationDays: number;
+  dealDurationHours: number;
+  dealDurationMinutes: number;
   adminNote: string | null;
 };
 
@@ -104,6 +107,9 @@ export function VendorSubmissionEditForm({
           suggestedRetailPrice: submission.suggestedRetailPrice,
           suggestedGroupPrice: submission.suggestedGroupPrice,
           productImageUrl: submission.productImageUrl,
+          dealDurationDays: submission.dealDurationDays,
+          dealDurationHours: submission.dealDurationHours,
+          dealDurationMinutes: submission.dealDurationMinutes,
         }}
         onImageUploadStateChange={setImageUploading}
       />

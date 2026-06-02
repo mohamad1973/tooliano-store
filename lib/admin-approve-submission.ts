@@ -58,7 +58,15 @@ export async function approveProductSubmission(
   }
 
   const campaignEndsAt = new Date();
-  campaignEndsAt.setDate(campaignEndsAt.getDate() + DEFAULT_CAMPAIGN_DAYS);
+  const durationMinutes =
+    submission.dealDurationDays * 24 * 60 +
+    submission.dealDurationHours * 60 +
+    submission.dealDurationMinutes;
+  if (Number.isFinite(durationMinutes) && durationMinutes > 0) {
+    campaignEndsAt.setMinutes(campaignEndsAt.getMinutes() + durationMinutes);
+  } else {
+    campaignEndsAt.setDate(campaignEndsAt.getDate() + DEFAULT_CAMPAIGN_DAYS);
+  }
 
   const vendorSettlement =
     submission.suggestedGroupPrice != null
