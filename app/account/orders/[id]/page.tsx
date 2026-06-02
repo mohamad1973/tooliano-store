@@ -31,6 +31,16 @@ export default async function OrderDetailPage({ params }: Props) {
     order.status !== ORDER_STATUS.CANCELLED &&
     order.status !== ORDER_STATUS.DELIVERED;
 
+  const isFirstPayment = balances.paidOnlineTotal <= 0.01;
+  const payButtonProps = {
+    orderId: order.id,
+    lineTotal: balances.lineTotal,
+    paidOnlineTotal: balances.paidOnlineTotal,
+    remainingBalance: balances.remainingBalance,
+    minDepositAmount: balances.minDepositAmount,
+    isFirstPayment,
+  };
+
   return (
     <div className="space-y-6" dir="rtl">
       <Link href="/account" className="text-sm font-semibold text-brand-gold hover:underline">
@@ -69,19 +79,11 @@ export default async function OrderDetailPage({ params }: Props) {
       </dl>
 
       {order.status === ORDER_STATUS.PENDING_PAYMENT ? (
-        <PayOrderButton
-          orderId={order.id}
-          remainingBalance={balances.remainingBalance}
-          minDepositAmount={balances.minDepositAmount}
-        />
+        <PayOrderButton {...payButtonProps} />
       ) : null}
 
       {canPayMore && order.status !== ORDER_STATUS.PENDING_PAYMENT ? (
-        <PayOrderButton
-          orderId={order.id}
-          remainingBalance={balances.remainingBalance}
-          minDepositAmount={balances.minDepositAmount}
-        />
+        <PayOrderButton {...payButtonProps} isFirstPayment={false} />
       ) : null}
 
       {order.status === ORDER_STATUS.READY_FOR_DELIVERY && deliveryCode ? (

@@ -5,7 +5,7 @@ import {
 } from "@/lib/auth/api-session";
 import { getWalletSummary } from "@/lib/wallet/ledger";
 
-/** محفظة المشتري فقط — التاجر/المندوب يحصلون على 403 */
+/** ملخص محفظة المشتري المسجّل فقط — لا يقبل userId خارج الجلسة */
 export async function GET() {
   const session = await requireApiBuyer();
   if (isSessionResponse(session)) return session;

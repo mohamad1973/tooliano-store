@@ -5,6 +5,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatCurrency } from "@/lib/format";
 import { calculateOrderAmounts, roundMoney } from "@/lib/orders/pricing";
+import {
+  getPaymentBounds,
+  previewAfterPayment,
+  validatePaymentAmountClient,
+} from "@/lib/orders/payment-amount-ui";
 
 type Props = {
   submissionId: string;
@@ -27,21 +32,36 @@ export function ReserveSection({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { depositAmount, lineTotal, minDepositAmount } = useMemo(() => {
+  const { lineTotal, minDepositAmount } = useMemo(() => {
     const calc = calculateOrderAmounts({
       unitGroupPrice: groupPrice,
       quantity: qty,
     });
     return {
       lineTotal: calc.lineTotal,
-      depositAmount: calc.depositAmount,
       minDepositAmount: calc.depositAmount,
     };
   }, [groupPrice, qty]);
 
-  const effectivePay =
-    payAmount === "" ? minDepositAmount : roundMoney(Number(payAmount));
-  const remainingAfter = roundMoney(Math.max(0, lineTotal - effectivePay));
+  const bounds = useMemo(
+    () =>
+      getPaymentBounds({
+        lineTotal,
+        paidOnlineTotal: 0,
+        minDepositAmount,
+        isFirstPayment: true,
+      }),
+    [lineTotal, minDepositAmount],
+  );
+
+  const effectivePay = roundMoney(
+    payAmount === "" ? bounds.defaultAmount : Number(payAmount),
+  );
+  const preview = previewAfterPayment({
+    lineTotal,
+    paidOnlineTotal: 0,
+    amount: effectivePay,
+  });
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -55,12 +75,16 @@ export function ReserveSection({
       setError("الحجز متاح لحسابات المشترين فقط");
       return;
     }
-    if (effectivePay < minDepositAmount - 0.01) {
-      setError(`الحد الأدنى للدفعة ${formatCurrency(minDepositAmount)} (5%)`);
-      return;
-    }
-    if (effectivePay > lineTotal + 0.01) {
-      setError("المبلغ يتجاوز قيمة الطلب");
+
+    const validationError = validatePaymentAmountClient({
+      lineTotal,
+      paidOnlineTotal: 0,
+      minDepositAmount,
+      isFirstPayment: true,
+      amount: effectivePay,
+    });
+    if (validationError) {
+      setError(validationError);
       return;
     }
 
@@ -152,13 +176,14 @@ export function ReserveSection({
         </label>
 
         <label className="flex flex-col gap-1 text-sm font-medium text-brand-navy">
-          مبلغ الدفع الآن (حد أدنى {formatCurrency(minDepositAmount)} — حتى كامل القيمة)
+          مبلغ الدفع الآن (حد أدنى {formatCurrency(bounds.min)} — حتى{" "}
+          {formatCurrency(bounds.max)})
           <input
             type="number"
-            min={minDepositAmount}
-            max={lineTotal}
+            min={bounds.min}
+            max={bounds.max}
             step="0.01"
-            value={payAmount === "" ? minDepositAmount : payAmount}
+            value={payAmount === "" ? bounds.defaultAmount : payAmount}
             onChange={(e) =>
               setPayAmount(
                 e.target.value === ""
@@ -176,8 +201,13 @@ export function ReserveSection({
             <strong className="text-brand-gold">{formatCurrency(effectivePay)}</strong>
           </li>
           <li className="mt-1">
-            الباقي على الطلب: <strong>{formatCurrency(remainingAfter)}</strong>
-            {remainingAfter > 0.01
+            المدفوع على الطلب بعد الدفعة:{" "}
+            <strong>{formatCurrency(preview.paidAfter)}</strong>
+          </li>
+          <li className="mt-1">
+            الباقي على الطلب:{" "}
+            <strong>{formatCurrency(preview.remainingAfter)}</strong>
+            {preview.remainingAfter > 0.01
               ? " (نقداً عند الاستلام أو أونلاين لاحقاً)"
               : " — مدفوع بالكامل"}
           </li>
@@ -195,7 +225,7 @@ export function ReserveSection({
           {loading ? "جاري المعالجة…" : "احجز وادفع"}
         </button>
         <p className="text-center text-xs text-brand-navy/50">
-          يُضاف المبلغ للمحفظة ثم يُحجز على الطلب — السجل لا يُحذف
+          يُسجَّل في كشف محفظتك فقط — لا يظهر لحسابات أخرى
         </p>
       </form>
     </section>

@@ -4,6 +4,7 @@ import { getBuyerAccountSummary } from "@/lib/orders/buyer-orders";
 import { orderStatusLabel } from "@/lib/orders/labels";
 import { formatCurrency } from "@/lib/format";
 import { NotificationsPanel } from "@/components/notifications/NotificationsPanel";
+import { getBuyerWalletDisplayBalances } from "@/lib/wallet/statement";
 
 export const metadata = { title: "حسابي" };
 
@@ -12,6 +13,7 @@ export default async function AccountPage() {
   if (!session) return null;
 
   const { wallet, orders } = await getBuyerAccountSummary(session.userId);
+  const balances = getBuyerWalletDisplayBalances(wallet);
 
   return (
     <div className="space-y-8">
@@ -22,15 +24,21 @@ export default async function AccountPage() {
 
       <section className="grid gap-4 sm:grid-cols-2">
         <div className="rounded-2xl border border-brand-gray bg-brand-white p-5 shadow-sm">
-          <p className="text-sm text-brand-navy/60">رصيد متاح</p>
-          <p className="mt-1 text-2xl font-bold text-brand-gold">
-            {formatCurrency(wallet.availableBalance)}
+          <p className="text-sm text-brand-navy/60">مدفوع على طلباتك (محجوز)</p>
+          <p className="mt-1 text-2xl font-bold text-brand-navy">
+            {formatCurrency(balances.lockedOnOrders)}
+          </p>
+          <p className="mt-1 text-xs text-brand-navy/50">
+            مبالغ دفعتها ومربوطة بطلبات نشطة
           </p>
         </div>
         <div className="rounded-2xl border border-brand-gray bg-brand-white p-5 shadow-sm">
-          <p className="text-sm text-brand-navy/60">محجوز على طلبات</p>
-          <p className="mt-1 text-2xl font-bold text-brand-navy">
-            {formatCurrency(wallet.lockedBalance)}
+          <p className="text-sm text-brand-navy/60">رصيد متاح للاستخدام</p>
+          <p className="mt-1 text-2xl font-bold text-brand-gold">
+            {formatCurrency(balances.spendableBalance)}
+          </p>
+          <p className="mt-1 text-xs text-brand-navy/50">
+            يظهر بعد تحرير مبلغ (مثلاً فشل حملة)
           </p>
         </div>
       </section>
@@ -40,7 +48,7 @@ export default async function AccountPage() {
           href="/account/wallet"
           className="text-sm font-semibold text-brand-gold hover:underline"
         >
-          سجل المعاملات ←
+          كشف المحفظة ←
         </Link>
       </p>
 

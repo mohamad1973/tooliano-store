@@ -47,6 +47,7 @@ export async function getBuyerOrderDetail(userId: string, orderId: string) {
   return { order, deliveryCode };
 }
 
+/** معاملات محفظة المشتري الحالي فقط — عبر walletId المرتبط بـ userId */
 export async function getWalletTransactions(userId: string, limit = 50) {
   const wallet = await ensureWallet(userId);
   return prisma.walletTransaction.findMany({
