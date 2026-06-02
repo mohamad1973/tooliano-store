@@ -19,6 +19,7 @@ export type SubmissionProductInput = {
   dealDurationDays: number;
   dealDurationHours: number;
   dealDurationMinutes: number;
+  boostReservedQuantity: number;
 };
 
 export function parseSubmissionProductBody(
@@ -59,6 +60,10 @@ export function parseSubmissionProductBody(
       String(body.dealDurationMinutes ?? "0"),
       10,
     ),
+    boostReservedQuantity: (() => {
+      const n = Number.parseInt(String(body.boostReservedQuantity ?? "0"), 10);
+      return Number.isFinite(n) && n >= 0 ? n : 0;
+    })(),
   };
 }
 

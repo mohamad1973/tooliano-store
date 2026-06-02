@@ -74,6 +74,7 @@ export function GroupBuyOpportunityCard({ opportunity }: Props) {
           <QuantityProgress
             targetQuantity={opportunity.targetQuantity}
             reservedQuantity={opportunity.reservedQuantity}
+            boostReservedQuantity={opportunity.boostReservedQuantity}
             compact
           />
         </div>

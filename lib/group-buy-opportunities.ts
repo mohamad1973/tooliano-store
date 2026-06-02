@@ -15,6 +15,7 @@ export type GroupBuyOpportunity = {
   vendorCompanyName: string;
   targetQuantity: number;
   reservedQuantity: number;
+  boostReservedQuantity: number;
   campaignEndsAt: Date;
   suggestedRetailPrice: number;
   suggestedGroupPrice: number;
@@ -51,6 +52,7 @@ async function mapSubmissionRows(
         row.vendor.vendorProfile?.companyName ?? row.vendor.username,
       targetQuantity: row.suggestedQuantity,
       reservedQuantity: row.reservedQuantity,
+      boostReservedQuantity: row.boostReservedQuantity ?? 0,
       campaignEndsAt: row.campaignEndsAt!,
       suggestedRetailPrice: row.suggestedRetailPrice!,
       suggestedGroupPrice: row.suggestedGroupPrice!,

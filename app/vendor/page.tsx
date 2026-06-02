@@ -144,6 +144,12 @@ export default async function VendorDashboardPage() {
                 </p>
                 <p className="mt-2 text-xs text-brand-navy/60">
                   كمية مقترحة: {item.suggestedQuantity}
+                  {item.boostReservedQuantity > 0
+                    ? ` · وهمي للعرض: ${item.boostReservedQuantity}`
+                    : ""}
+                  {item.reservedQuantity > 0
+                    ? ` · محجوز حقيقي: ${item.reservedQuantity}`
+                    : ""}
                   {item.suggestedRetailPrice != null
                     ? ` · فردي: ${item.suggestedRetailPrice} ج.م`
                     : ""}

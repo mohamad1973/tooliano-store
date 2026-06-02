@@ -21,6 +21,8 @@ export type AdminSubmissionCardData = {
   specExtra: string | null;
   outletReason: string | null;
   suggestedQuantity: number;
+  boostReservedQuantity: number;
+  reservedQuantity: number;
   suggestedRetailPrice: number | null;
   suggestedGroupPrice: number | null;
   dealDurationDays: number;
@@ -63,6 +65,12 @@ export function AdminSubmissionCard({
       />
       <p className="mt-2 text-xs text-brand-navy/60">
         كمية: {item.suggestedQuantity}
+        {item.boostReservedQuantity > 0
+          ? ` · عرض وهمي: ${item.boostReservedQuantity}`
+          : ""}
+        {item.reservedQuantity > 0
+          ? ` · محجوز حقيقي: ${item.reservedQuantity}`
+          : ""}
         {item.suggestedGroupPrice != null
           ? ` · جماعي ${item.suggestedGroupPrice}`
           : ""}

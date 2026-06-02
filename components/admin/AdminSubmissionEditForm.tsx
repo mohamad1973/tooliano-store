@@ -18,6 +18,7 @@ type SubmissionData = {
   specExtra: string | null;
   outletReason: string | null;
   suggestedQuantity: number;
+  boostReservedQuantity: number;
   suggestedRetailPrice: number | null;
   suggestedGroupPrice: number | null;
   productImageUrl: string | null;
@@ -130,6 +131,7 @@ export function AdminSubmissionEditForm({
             specExtra: submission.specExtra,
             outletReason: submission.outletReason,
             suggestedQuantity: submission.suggestedQuantity,
+            boostReservedQuantity: submission.boostReservedQuantity,
             suggestedRetailPrice: submission.suggestedRetailPrice,
             suggestedGroupPrice: submission.suggestedGroupPrice,
             productImageUrl: submission.productImageUrl,

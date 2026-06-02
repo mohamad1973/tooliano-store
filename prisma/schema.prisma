@@ -74,6 +74,7 @@ model ProductSubmission {
   dealDurationHours         Int       @default(0)
   dealDurationMinutes       Int       @default(0)
   reservedQuantity          Int       @default(0)
+  boostReservedQuantity     Int       @default(0)
   publishedOnStore          Boolean   @default(false)
   adminHidden               Boolean   @default(false)
   wooSyncStatus             String    @default("none")

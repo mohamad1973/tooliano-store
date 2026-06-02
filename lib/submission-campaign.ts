@@ -24,6 +24,7 @@ export type SubmissionCampaignView = {
   vendorCompanyName: string;
   targetQuantity: number;
   reservedQuantity: number;
+  boostReservedQuantity: number;
   campaignEndsAt: string;
   retailPrice: number;
   groupPrice: number;
@@ -74,6 +75,7 @@ export async function fetchSubmissionCampaignById(
       row.vendor.vendorProfile?.companyName ?? row.vendor.username,
     targetQuantity: row.suggestedQuantity,
     reservedQuantity: row.reservedQuantity,
+    boostReservedQuantity: row.boostReservedQuantity ?? 0,
     campaignEndsAt: row.campaignEndsAt.toISOString(),
     retailPrice: row.suggestedRetailPrice,
     groupPrice: row.suggestedGroupPrice,

@@ -1,4 +1,5 @@
 import type { Prisma } from "@prisma/client";
+import { clampBoostQuantity } from "@/lib/campaign-display-quantity";
 import type { SubmissionProductInput } from "@/lib/submission-product-fields";
 
 export function toSubmissionCreateData(
@@ -47,6 +48,10 @@ export function toSubmissionCreateData(
       input.dealDurationMinutes <= 59
         ? input.dealDurationMinutes
         : 0,
+    boostReservedQuantity: clampBoostQuantity(
+      input.suggestedQuantity,
+      input.boostReservedQuantity,
+    ),
     ...extra,
   };
 }
@@ -94,5 +99,9 @@ export function toSubmissionUpdateData(
       input.dealDurationMinutes <= 59
         ? input.dealDurationMinutes
         : 0,
+    boostReservedQuantity: clampBoostQuantity(
+      input.suggestedQuantity,
+      input.boostReservedQuantity,
+    ),
   };
 }

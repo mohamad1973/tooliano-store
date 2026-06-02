@@ -22,6 +22,7 @@ export type VendorProductDefaults = {
   specExtra?: string | null;
   outletReason?: string | null;
   suggestedQuantity?: number;
+  boostReservedQuantity?: number;
   suggestedRetailPrice?: number | null;
   suggestedGroupPrice?: number | null;
   productImageUrl?: string | null;
@@ -160,14 +161,24 @@ export function VendorProductDetailsFields({
       />
 
       {showQuantity ? (
-        <AuthTextField
-          label="الكمية المقترحة للحملة"
-          name="suggestedQuantity"
-          type="number"
-          min={1}
-          defaultValue={defaults.suggestedQuantity ?? ""}
-          required
-        />
+        <>
+          <AuthTextField
+            label="الكمية المقترحة للحملة"
+            name="suggestedQuantity"
+            type="number"
+            min={1}
+            defaultValue={defaults.suggestedQuantity ?? ""}
+            required
+          />
+          <AuthTextField
+            label="كمية وهمية للعرض (اختياري)"
+            name="boostReservedQuantity"
+            type="number"
+            min={0}
+            defaultValue={defaults.boostReservedQuantity ?? 0}
+            hint="تظهر للمشتري كحجز مسبق — الحد الأقصى 10% من الكمية المستهدفة (مثال: هدف 100 → حتى 10 قطع)"
+          />
+        </>
       ) : null}
 
       {showPricing ? (

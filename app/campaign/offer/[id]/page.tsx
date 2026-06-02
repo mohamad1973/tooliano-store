@@ -92,6 +92,7 @@ export default async function OfferCampaignPage({ params }: Props) {
           <QuantityProgress
             targetQuantity={campaign.targetQuantity}
             reservedQuantity={campaign.reservedQuantity}
+            boostReservedQuantity={campaign.boostReservedQuantity}
           />
         </div>
       </section>

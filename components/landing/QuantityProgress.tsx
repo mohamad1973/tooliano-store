@@ -2,20 +2,30 @@ import {
   getProgressPercent,
   getRemainingQuantity,
 } from "@/lib/campaign-config";
+import { getDisplayReservedQuantity } from "@/lib/campaign-display-quantity";
 
 type Props = {
   targetQuantity: number;
+  /** محجوز حقيقي من الطلبات */
   reservedQuantity: number;
+  /** كمية وهمية للعرض فقط */
+  boostReservedQuantity?: number;
   compact?: boolean;
 };
 
 export function QuantityProgress({
   targetQuantity,
   reservedQuantity,
+  boostReservedQuantity = 0,
   compact = false,
 }: Props) {
-  const remaining = getRemainingQuantity(targetQuantity, reservedQuantity);
-  const percent = getProgressPercent(targetQuantity, reservedQuantity);
+  const displayReserved = getDisplayReservedQuantity(
+    targetQuantity,
+    reservedQuantity,
+    boostReservedQuantity,
+  );
+  const remaining = getRemainingQuantity(targetQuantity, displayReserved);
+  const percent = getProgressPercent(targetQuantity, displayReserved);
 
   return (
     <div
@@ -66,7 +76,7 @@ export function QuantityProgress({
           className="h-full rounded-full bg-brand-gold transition-all duration-500"
           style={{ width: `${percent}%` }}
           role="progressbar"
-          aria-valuenow={reservedQuantity}
+          aria-valuenow={displayReserved}
           aria-valuemin={0}
           aria-valuemax={targetQuantity}
         />
@@ -78,7 +88,7 @@ export function QuantityProgress({
             : "mt-2 text-center text-xs text-brand-navy/60"
         }
       >
-        تم حجز {reservedQuantity} من {targetQuantity} قطعة ({percent}%)
+        تم حجز {displayReserved} من {targetQuantity} قطعة ({percent}%)
       </p>
     </div>
   );

@@ -1,4 +1,5 @@
 import type { ProductSubmission } from "@prisma/client";
+import { getMaxBoostQuantity } from "@/lib/campaign-display-quantity";
 import { PRODUCT_CONDITION } from "@/lib/db/constants";
 import { isValidPublicImageUrl } from "@/lib/image-url";
 import { countFilledSpecs } from "@/lib/submission-product-fields";
@@ -28,6 +29,7 @@ type SubmissionForValidation = Pick<
   | "dealDurationDays"
   | "dealDurationHours"
   | "dealDurationMinutes"
+  | "boostReservedQuantity"
 >;
 
 export function validateSubmissionForApproval(
@@ -146,6 +148,25 @@ export function validateSubmissionForApproval(
       field: "dealDuration",
       message: "مدة الديل يجب أن تكون أكبر من صفر",
     });
+  }
+
+  const boost = submission.boostReservedQuantity ?? 0;
+  if (!Number.isFinite(boost) || boost < 0) {
+    issues.push({
+      field: "boostReservedQuantity",
+      message: "الكمية الوهمية للعرض غير صالحة",
+    });
+  } else if (
+    Number.isFinite(submission.suggestedQuantity) &&
+    submission.suggestedQuantity >= 1
+  ) {
+    const maxBoost = getMaxBoostQuantity(submission.suggestedQuantity);
+    if (boost > maxBoost) {
+      issues.push({
+        field: "boostReservedQuantity",
+        message: `الكمية الوهمية للعرض لا تتجاوز ${maxBoost} قطعة (10% من الكمية المستهدفة)`,
+      });
+    }
   }
 
   return issues;
