@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import { CompactCampaignStats } from "@/components/group-buy/CompactCampaignStats";
+import { CountdownTimer } from "@/components/landing/CountdownTimer";
+import { QuantityProgress } from "@/components/landing/QuantityProgress";
 import { formatCurrency } from "@/lib/format";
 import type { GroupBuyOpportunity } from "@/lib/group-buy-opportunities";
 import {
@@ -60,11 +61,20 @@ export function GroupBuyOpportunityCard({ opportunity }: Props) {
           </span>
         </p>
 
-        <div className="mt-4 flex-1">
-          <CompactCampaignStats
-            endsAt={opportunity.campaignEndsAt.toISOString()}
+        <div className="mt-4 flex flex-1 flex-col space-y-3">
+          <div>
+            <h4 className="mb-2 text-center text-xs font-bold text-brand-navy">
+              الوقت المتبقي للعرض
+            </h4>
+            <CountdownTimer
+              endsAt={opportunity.campaignEndsAt.toISOString()}
+              compact
+            />
+          </div>
+          <QuantityProgress
             targetQuantity={opportunity.targetQuantity}
             reservedQuantity={opportunity.reservedQuantity}
+            compact
           />
         </div>
 
