@@ -127,6 +127,11 @@ export async function confirmOrderPayment(input: {
   if (isFirstPayment) {
     const { tryEarlyCampaignSuccess } = await import("@/lib/campaign/sync");
     await tryEarlyCampaignSuccess(order.submissionId);
+
+    const { createBookingConfirmedNotifications } = await import(
+      "@/lib/notifications/create-booking-notifications"
+    );
+    await createBookingConfirmedNotifications(order.id);
   }
 
   return updated;

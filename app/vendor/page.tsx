@@ -17,6 +17,7 @@ import {
 import { prisma } from "@/lib/db/prisma";
 import { getVendorOrderSummaries } from "@/lib/vendor/submission-orders";
 import { orderStatusLabel } from "@/lib/orders/labels";
+import { NotificationsPanel } from "@/components/notifications/NotificationsPanel";
 
 export const metadata = {
   title: "لوحة البائع",
@@ -95,6 +96,13 @@ export default async function VendorDashboardPage() {
           ) : null}
         </section>
       ) : null}
+
+      <section className="mb-8 rounded-2xl border border-brand-gray p-5">
+        <h2 className="text-lg font-bold text-brand-navy">الإشعارات</h2>
+        <div className="mt-4">
+          <NotificationsPanel />
+        </div>
+      </section>
 
       <section>
         <h2 className="text-lg font-bold text-brand-navy">منتجاتك المُرسلة</h2>

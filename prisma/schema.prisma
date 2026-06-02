@@ -24,6 +24,7 @@ model User {
   groupBuyOrders        GroupBuyOrder[]     @relation("BuyerOrders")
   deliveryConfirmations DeliveryConfirmation[] @relation("ConfirmedByAgent")
   adminAuditLogs        AdminAuditLog[]       @relation("AdminActor")
+  appNotifications      AppNotification[]
 }
 
 model VendorProfile {
@@ -295,4 +296,20 @@ model PageBlock {
   updatedAt DateTime @updatedAt
 
   @@index([pageKey, sortOrder])
+}
+
+model AppNotification {
+  id           String    @id @default(cuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type         String
+  productName  String
+  message      String
+  orderId      String
+  submissionId String?
+  readAt       DateTime?
+  createdAt    DateTime  @default(now())
+
+  @@unique([orderId, userId, type])
+  @@index([userId, createdAt])
 }

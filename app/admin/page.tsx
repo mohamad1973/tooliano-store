@@ -3,6 +3,7 @@ import { AdminShell } from "@/components/admin/AdminShell";
 import { getAdminOverviewStats } from "@/lib/admin/overview-stats";
 import { requireAdmin } from "@/lib/auth/guards";
 import { formatCurrency } from "@/lib/format";
+import { NotificationsPanel } from "@/components/notifications/NotificationsPanel";
 
 export const metadata = { title: "ملخص الإدارة" };
 
@@ -49,6 +50,18 @@ export default async function AdminOverviewPage() {
           </Link>
         ))}
       </div>
+
+      <section className="mb-8 rounded-2xl border border-brand-gray bg-brand-white p-5 shadow-sm">
+        <h2 className="text-lg font-bold text-brand-navy">الإشعارات</h2>
+        <div className="mt-4">
+          <NotificationsPanel />
+        </div>
+        <p className="mt-3 text-xs text-brand-navy/50">
+          <Link href="/admin/payments" className="font-semibold text-brand-gold hover:underline">
+            عرض الطلبات والمدفوعات ←
+          </Link>
+        </p>
+      </section>
 
       <section className="grid gap-4 sm:grid-cols-2">
         <div className="rounded-2xl border border-brand-gray bg-brand-white p-5">

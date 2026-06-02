@@ -88,3 +88,10 @@ export const DELIVERY_CODE_TTL_DAYS = Number(
 export const DELIVERY_CODE_MAX_ATTEMPTS = Number(
   process.env.DELIVERY_CODE_MAX_ATTEMPTS ?? "10",
 );
+
+export const NOTIFICATION_TYPES = {
+  BOOKING_CONFIRMED: "BOOKING_CONFIRMED",
+} as const;
+
+export type NotificationType =
+  (typeof NOTIFICATION_TYPES)[keyof typeof NOTIFICATION_TYPES];
