@@ -1,8 +1,11 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Cairo } from "next/font/google";
 import { ThemeVariables } from "@/components/ThemeVariables";
+import { InstallAppPrompt } from "@/components/pwa/InstallAppPrompt";
+import { RegisterServiceWorker } from "@/components/pwa/RegisterServiceWorker";
 import "./globals.css";
 import { SITE_NAME } from "@/lib/constants";
+import { PWA_THEME_COLOR } from "@/lib/pwa/brand";
 
 const cairo = Cairo({
   variable: "--font-cairo",
@@ -16,6 +19,22 @@ export const metadata: Metadata = {
     template: `%s | ${SITE_NAME}`,
   },
   description: "أدوات المنزل العصري — Tooliano",
+  applicationName: SITE_NAME,
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: SITE_NAME,
+  },
+  formatDetection: {
+    telephone: false,
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: PWA_THEME_COLOR,
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -27,6 +46,8 @@ export default function RootLayout({
     <html lang="ar" dir="rtl" className={`${cairo.variable} h-full`}>
       <body className="min-h-full bg-brand-white font-sans text-brand-navy antialiased">
         <ThemeVariables />
+        <RegisterServiceWorker />
+        <InstallAppPrompt />
         {children}
       </body>
     </html>

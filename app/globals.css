@@ -28,6 +28,13 @@ body {
   color: var(--foreground);
 }
 
+@supports (padding: env(safe-area-inset-top)) {
+  body {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
 /* توب بار: حركة من الشمال إلى اليمين (LTR) */
 @keyframes top-marquee-lr {
   from {
