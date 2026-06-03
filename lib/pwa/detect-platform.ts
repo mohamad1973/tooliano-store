@@ -26,3 +26,17 @@ export function isMobileUa(): boolean {
 export function isDesktopUa(): boolean {
   return !isMobileUa();
 }
+
+/** متصفح داخل واتساب / تيليجرام / فيسبوك — التثبيت غالباً غير متاح */
+export function isInAppBrowser(): boolean {
+  if (typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent;
+  if (/FBAN|FBAV|Instagram|Line\//i.test(ua)) return true;
+  if (/WhatsApp|Telegram/i.test(ua)) return true;
+  if (isAndroid() && /\; wv\)/.test(ua)) return true;
+  return false;
+}
+
+export function isAndroidChrome(): boolean {
+  return isAndroid() && /Chrome/i.test(navigator.userAgent) && !isInAppBrowser();
+}
