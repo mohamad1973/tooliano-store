@@ -1,8 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Cairo } from "next/font/google";
 import { ThemeVariables } from "@/components/ThemeVariables";
-import { InstallAppPrompt } from "@/components/pwa/InstallAppPrompt";
-import { RegisterServiceWorker } from "@/components/pwa/RegisterServiceWorker";
+import { PwaShell } from "@/components/pwa/PwaShell";
 import "./globals.css";
 import { SITE_NAME } from "@/lib/constants";
 import { PWA_THEME_COLOR } from "@/lib/pwa/brand";
@@ -46,9 +45,7 @@ export default function RootLayout({
     <html lang="ar" dir="rtl" className={`${cairo.variable} h-full`}>
       <body className="min-h-full bg-brand-white font-sans text-brand-navy antialiased">
         <ThemeVariables />
-        <RegisterServiceWorker />
-        <InstallAppPrompt />
-        {children}
+        <PwaShell>{children}</PwaShell>
       </body>
     </html>
   );

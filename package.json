@@ -26,6 +26,7 @@
     "setup:wp-env": "npx tsx scripts/ensure-wp-env.ts",
     "check:wp-media": "npx tsx scripts/check-wp-media.ts",
     "cms:repair-categories": "dotenv -e .env.local -- npx tsx scripts/repair-cms-categories.ts",
+    "pwa:icons": "npx tsx scripts/generate-pwa-icons.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {

@@ -4,6 +4,7 @@ import { PWA_BACKGROUND_COLOR, PWA_THEME_COLOR } from "@/lib/pwa/brand";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
+    id: "/",
     name: SITE_NAME,
     short_name: SITE_NAME,
     description: "أدوات المنزل العصري — Tooliano",
@@ -17,19 +18,19 @@ export default function manifest(): MetadataRoute.Manifest {
     background_color: PWA_BACKGROUND_COLOR,
     icons: [
       {
-        src: "/pwa-icon/192",
+        src: "/icons/icon-192.png",
         sizes: "192x192",
         type: "image/png",
         purpose: "any",
       },
       {
-        src: "/pwa-icon/512",
+        src: "/icons/icon-512.png",
         sizes: "512x512",
         type: "image/png",
         purpose: "any",
       },
       {
-        src: "/pwa-icon/512",
+        src: "/icons/icon-512.png",
         sizes: "512x512",
         type: "image/png",
         purpose: "maskable",
