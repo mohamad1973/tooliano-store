@@ -91,6 +91,7 @@ export const DELIVERY_CODE_MAX_ATTEMPTS = Number(
 
 export const NOTIFICATION_TYPES = {
   BOOKING_CONFIRMED: "BOOKING_CONFIRMED",
+  CAMPAIGN_REMAINING: "CAMPAIGN_REMAINING",
 } as const;
 
 export type NotificationType =

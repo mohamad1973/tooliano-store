@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { LogoutButton } from "@/components/auth/LogoutButton";
+import { HeaderNotificationsBell } from "@/components/notifications/HeaderNotificationsBell";
 import { ADMIN_NAV } from "@/lib/admin/nav";
 import { SITE_NAME } from "@/lib/constants";
 
@@ -38,7 +39,8 @@ export function AdminShell({
               </Link>
             ))}
           </nav>
-          <div className="flex flex-wrap gap-2 border-t border-brand-white/10 p-4">
+          <div className="flex flex-wrap items-center gap-3 border-t border-brand-white/10 p-4">
+            <HeaderNotificationsBell onDark />
             <Link
               href="/"
               className="text-xs font-semibold text-brand-gold hover:underline"

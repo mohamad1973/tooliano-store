@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getNavMenuItems, getSiteSettings, isMarqueeEnabled } from "@/lib/cms/get-site-content";
 import { HeaderCmsNav } from "@/components/HeaderCmsNav";
 import { HeaderIconsSocial } from "@/components/HeaderIconsSocial";
+import { HeaderNotificationsBell } from "@/components/notifications/HeaderNotificationsBell";
 import { TopMarquee } from "@/components/TopMarquee";
 
 export async function SiteHeader() {
@@ -51,7 +52,10 @@ export async function SiteHeader() {
               </div>
             </div>
 
-            <HeaderIconsSocial />
+            <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
+              <HeaderNotificationsBell />
+              <HeaderIconsSocial />
+            </div>
           </div>
         </div>
       </header>

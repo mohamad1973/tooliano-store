@@ -4,6 +4,7 @@ import { getBuyerAccountSummary } from "@/lib/orders/buyer-orders";
 import { orderStatusLabel } from "@/lib/orders/labels";
 import { formatCurrency } from "@/lib/format";
 import { NotificationsPanel } from "@/components/notifications/NotificationsPanel";
+import { NotificationPreferencesForm } from "@/components/notifications/NotificationPreferencesForm";
 import { getBuyerWalletDisplayBalances } from "@/lib/wallet/statement";
 
 export const metadata = { title: "حسابي" };
@@ -52,10 +53,13 @@ export default async function AccountPage() {
         </Link>
       </p>
 
-      <section>
-        <h2 className="text-lg font-bold text-brand-navy">الإشعارات</h2>
-        <div className="mt-4 rounded-2xl border border-brand-gray bg-brand-white p-5 shadow-sm">
-          <NotificationsPanel orderLinkPrefix="/account/orders" />
+      <section className="space-y-4">
+        <NotificationPreferencesForm />
+        <div>
+          <h2 className="text-lg font-bold text-brand-navy">الإشعارات</h2>
+          <div className="mt-4 rounded-2xl border border-brand-gray bg-brand-white p-5 shadow-sm">
+            <NotificationsPanel orderLinkPrefix="/account/orders" />
+          </div>
         </div>
       </section>
 

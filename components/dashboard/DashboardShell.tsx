@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { LogoutButton } from "@/components/auth/LogoutButton";
+import { HeaderNotificationsBell } from "@/components/notifications/HeaderNotificationsBell";
 import { SITE_NAME } from "@/lib/constants";
 
 type DashboardShellProps = {
@@ -30,6 +31,7 @@ export function DashboardShell({
             ) : null}
           </div>
           <div className="flex items-center gap-3">
+            <HeaderNotificationsBell onDark />
             <Link
               href="/"
               className="text-sm text-brand-white/80 hover:text-brand-gold"

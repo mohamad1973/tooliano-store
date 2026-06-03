@@ -1,7 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { CountdownTimer } from "@/components/landing/CountdownTimer";
-import { QuantityProgress } from "@/components/landing/QuantityProgress";
+import { LiveCampaignProgress } from "@/components/campaign/LiveCampaignProgress";
+import { LiveRemainingBadge } from "@/components/campaign/LiveRemainingBadge";
+import { getDisplayReservedQuantity } from "@/lib/campaign-display-quantity";
+import { getRemainingQuantity } from "@/lib/campaign-config";
 import { formatCurrency } from "@/lib/format";
 import type { GroupBuyOpportunity } from "@/lib/group-buy-opportunities";
 import {
@@ -15,6 +18,21 @@ type Props = {
 
 export function GroupBuyOpportunityCard({ opportunity }: Props) {
   const href = `/campaign/offer/${opportunity.id}`;
+  const displayReserved = getDisplayReservedQuantity(
+    opportunity.targetQuantity,
+    opportunity.reservedQuantity,
+    opportunity.boostReservedQuantity,
+  );
+  const initialRemaining = getRemainingQuantity(
+    opportunity.targetQuantity,
+    displayReserved,
+  );
+  const progressInitial = {
+    targetQuantity: opportunity.targetQuantity,
+    reservedQuantity: opportunity.reservedQuantity,
+    boostReservedQuantity: opportunity.boostReservedQuantity,
+    remaining: initialRemaining,
+  };
 
   return (
     <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-brand-gray bg-brand-white shadow-sm transition hover:border-brand-gold/60 hover:shadow-md">
@@ -33,6 +51,12 @@ export function GroupBuyOpportunityCard({ opportunity }: Props) {
             بدون صورة
           </div>
         )}
+        <div className="absolute end-3 top-3">
+          <LiveRemainingBadge
+            submissionId={opportunity.id}
+            initialRemaining={initialRemaining}
+          />
+        </div>
         <div className="absolute start-3 top-3 flex flex-col gap-1">
           <span
             className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${productConditionBadgeClass(opportunity.productCondition)}`}
@@ -71,10 +95,9 @@ export function GroupBuyOpportunityCard({ opportunity }: Props) {
               compact
             />
           </div>
-          <QuantityProgress
-            targetQuantity={opportunity.targetQuantity}
-            reservedQuantity={opportunity.reservedQuantity}
-            boostReservedQuantity={opportunity.boostReservedQuantity}
+          <LiveCampaignProgress
+            submissionId={opportunity.id}
+            initial={progressInitial}
             compact
           />
         </div>

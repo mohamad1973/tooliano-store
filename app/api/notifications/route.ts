@@ -19,6 +19,7 @@ export async function GET() {
       message: n.message,
       orderId: n.orderId,
       submissionId: n.submissionId,
+      remainingQuantity: n.remainingQuantity,
       readAt: n.readAt?.toISOString() ?? null,
       createdAt: n.createdAt.toISOString(),
     })),

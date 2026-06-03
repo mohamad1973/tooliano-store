@@ -5,7 +5,9 @@ import { CampaignLandingBlocks } from "@/components/landing/CampaignLandingBlock
 import { CountdownTimer } from "@/components/landing/CountdownTimer";
 import { PriceComparison } from "@/components/landing/PriceComparison";
 import { ProductGallery } from "@/components/landing/ProductGallery";
-import { QuantityProgress } from "@/components/landing/QuantityProgress";
+import { LiveCampaignProgress } from "@/components/campaign/LiveCampaignProgress";
+import { getDisplayReservedQuantity } from "@/lib/campaign-display-quantity";
+import { getRemainingQuantity } from "@/lib/campaign-config";
 import { ReserveSection } from "@/components/landing/ReserveSection";
 import { StickyReserveBar } from "@/components/landing/StickyReserveBar";
 import { WhyGroupBuy } from "@/components/landing/WhyGroupBuy";
@@ -43,6 +45,18 @@ export default async function OfferCampaignPage({ params }: Props) {
   const session = await getSession();
   const isLoggedIn = Boolean(session);
   const isBuyer = session?.role === USER_ROLES.BUYER;
+
+  const displayReserved = getDisplayReservedQuantity(
+    campaign.targetQuantity,
+    campaign.reservedQuantity,
+    campaign.boostReservedQuantity,
+  );
+  const progressInitial = {
+    targetQuantity: campaign.targetQuantity,
+    reservedQuantity: campaign.reservedQuantity,
+    boostReservedQuantity: campaign.boostReservedQuantity,
+    remaining: getRemainingQuantity(campaign.targetQuantity, displayReserved),
+  };
 
   return (
     <>
@@ -89,10 +103,10 @@ export default async function OfferCampaignPage({ params }: Props) {
             </h3>
             <CountdownTimer endsAt={campaign.campaignEndsAt} />
           </div>
-          <QuantityProgress
-            targetQuantity={campaign.targetQuantity}
-            reservedQuantity={campaign.reservedQuantity}
-            boostReservedQuantity={campaign.boostReservedQuantity}
+          <LiveCampaignProgress
+            submissionId={campaign.id}
+            initial={progressInitial}
+            showCircleBadge
           />
         </div>
       </section>

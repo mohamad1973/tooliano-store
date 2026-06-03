@@ -132,6 +132,11 @@ export async function confirmOrderPayment(input: {
       "@/lib/notifications/create-booking-notifications"
     );
     await createBookingConfirmedNotifications(order.id);
+
+    const { createCampaignRemainingNotifications } = await import(
+      "@/lib/notifications/create-campaign-remaining-notifications"
+    );
+    await createCampaignRemainingNotifications(order.id);
   }
 
   return updated;
