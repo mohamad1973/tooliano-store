@@ -9,17 +9,25 @@ export function RemainingCountBadge({
   size = "sm",
   className = "",
 }: Props) {
-  const sizeClass =
+  const circleClass =
     size === "md"
-      ? "h-12 w-12 text-base"
-      : "h-10 w-10 text-sm";
+      ? "h-9 min-w-9 text-sm"
+      : "h-8 min-w-8 text-xs";
+
+  const label = remaining > 99 ? "99+" : String(remaining);
 
   return (
     <span
-      className={`inline-flex shrink-0 items-center justify-center rounded-full border-2 border-brand-gold bg-brand-navy font-bold tabular-nums text-brand-gold shadow-md transition-all duration-300 ${sizeClass} ${className}`}
+      className={`inline-flex shrink-0 items-center gap-1 ${className}`}
       title={`${remaining} قطعة متبقية`}
+      dir="rtl"
     >
-      {remaining}
+      <span
+        className={`inline-flex items-center justify-center rounded-full bg-red-600 px-1.5 font-bold tabular-nums leading-none text-white shadow-sm ring-2 ring-white ${circleClass}`}
+      >
+        {label}
+      </span>
+      <span className="text-[10px] font-semibold text-brand-navy/75">متبقى</span>
     </span>
   );
 }
