@@ -21,8 +21,19 @@ function run(cmd: string) {
 console.log("▶ prisma generate");
 run("npx prisma generate");
 
-console.log("▶ prisma db push");
-run("npx prisma db push");
+const onVercel = Boolean(process.env.VERCEL);
+const pushSchema =
+  process.env.VERCEL_DB_PUSH === "1" ||
+  (!onVercel && process.env.SKIP_DB_PUSH !== "1");
+
+if (pushSchema) {
+  console.log("▶ prisma db push");
+  run("npx prisma db push");
+} else {
+  console.log(
+    "▶ skip prisma db push (Vercel — schema unchanged; set VERCEL_DB_PUSH=1 to force)",
+  );
+}
 
 console.log("▶ next build");
 run("npx next build");
