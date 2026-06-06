@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Cairo } from "next/font/google";
 import { ThemeVariables } from "@/components/ThemeVariables";
 import { PwaShell } from "@/components/pwa/PwaShell";
+import { SocialSideRail } from "@/components/social/SocialSideRail";
 import "./globals.css";
 import { SITE_NAME } from "@/lib/constants";
 import { PWA_THEME_COLOR } from "@/lib/pwa/brand";
@@ -46,6 +47,7 @@ export default function RootLayout({
       <body className="min-h-full bg-brand-white font-sans text-brand-navy antialiased">
         <ThemeVariables />
         <PwaShell>{children}</PwaShell>
+        <SocialSideRail />
       </body>
     </html>
   );

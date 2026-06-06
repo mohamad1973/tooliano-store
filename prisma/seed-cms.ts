@@ -153,4 +153,51 @@ export async function seedCms(prisma: PrismaClient) {
     });
     console.log("CMS: default home hero block seeded");
   }
+
+  const { SOCIAL_URLS } = await import("../lib/constants");
+  const socialCount = await prisma.socialLink.count();
+  if (socialCount === 0) {
+    await prisma.socialLink.createMany({
+      data: [
+        {
+          platform: "facebook",
+          label: "فيسبوك",
+          url: SOCIAL_URLS.facebook,
+          sortOrder: 0,
+        },
+        {
+          platform: "instagram",
+          label: "إنستغرام",
+          url: SOCIAL_URLS.instagram,
+          sortOrder: 1,
+        },
+        {
+          platform: "tiktok",
+          label: "تيك توك",
+          url: SOCIAL_URLS.tiktok,
+          sortOrder: 2,
+        },
+        {
+          platform: "youtube",
+          label: "يوتيوب",
+          url: SOCIAL_URLS.youtube,
+          sortOrder: 3,
+        },
+      ],
+    });
+    console.log("CMS: social links seeded");
+  }
+
+  for (const [key, value] of Object.entries({
+    socialShowHeader: "true",
+    socialShowFooter: "false",
+    socialShowSide: "false",
+    socialSidePosition: "start",
+    socialClickMode: "chooser",
+  })) {
+    const exists = await prisma.siteSetting.findUnique({ where: { key } });
+    if (!exists) {
+      await prisma.siteSetting.create({ data: { key, value } });
+    }
+  }
 }

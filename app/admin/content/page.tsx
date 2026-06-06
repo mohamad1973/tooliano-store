@@ -45,6 +45,11 @@ const SECTIONS = [
     desc: "أعمدة وروابط أسفل الموقع",
   },
   {
+    href: "/admin/content/social",
+    title: "وسائل التواصل",
+    desc: "أيقونات السوشيال، الروابط، الهيدر/الفوتر/الجانب",
+  },
+  {
     href: "/admin/content/campaign",
     title: "صفحات الحملة",
     desc: "FAQ، كيف يعمل، سياسة المحفظة",

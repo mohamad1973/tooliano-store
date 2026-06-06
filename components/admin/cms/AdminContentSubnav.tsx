@@ -10,6 +10,7 @@ const LINKS = [
   { href: "/admin/content/pages/home", label: "كتل الصفحة" },
   { href: "/admin/content/theme", label: "ألوان الثيم" },
   { href: "/admin/content/footer", label: "الفوتر" },
+  { href: "/admin/content/social", label: "السوشيال" },
   { href: "/admin/content/campaign", label: "صفحات الحملة" },
 ] as const;
 

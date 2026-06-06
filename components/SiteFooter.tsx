@@ -1,10 +1,13 @@
 import Link from "next/link";
-import { getFooterColumns, getSiteSettings } from "@/lib/cms/get-site-content";
+import { SocialIconsList } from "@/components/social/SocialIconsList";
+import { getFooterColumns, getSiteSettings, getSocialDisplaySettings, getSocialLinks } from "@/lib/cms/get-site-content";
 
 export async function SiteFooter() {
-  const [columns, settings] = await Promise.all([
+  const [columns, settings, socialLinks, socialDisplay] = await Promise.all([
     getFooterColumns(),
     getSiteSettings(),
+    getSocialLinks(),
+    getSocialDisplaySettings(),
   ]);
 
   if (columns.length === 0) return null;
@@ -35,6 +38,18 @@ export async function SiteFooter() {
           </div>
         ))}
       </div>
+      {socialDisplay.showFooter && socialLinks.length > 0 ? (
+        <div className="border-t border-brand-white/10 py-5">
+          <SocialIconsList
+            links={socialLinks}
+            clickMode={socialDisplay.clickMode}
+            layout="horizontal"
+            className="justify-center"
+            onDark
+            buttonClassName="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-brand-white transition hover:bg-brand-white/15 hover:text-brand-gold"
+          />
+        </div>
+      ) : null}
       <div className="border-t border-brand-white/10 py-4 text-center text-xs text-brand-white/60">
         © {year} {settings.siteName}. جميع الحقوق محفوظة.
       </div>

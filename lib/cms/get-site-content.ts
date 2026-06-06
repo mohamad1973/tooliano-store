@@ -20,6 +20,7 @@ import {
   DEFAULT_THEME_COLORS,
   DEFAULT_WALLET_POLICY,
 } from "@/lib/cms/defaults";
+import { SOCIAL_PLATFORMS } from "@/lib/cms/social-platforms";
 import { PAGE_KEYS } from "@/lib/cms/page-blocks";
 import { sanitizeRichHtml } from "@/lib/cms/sanitize";
 import { resolveNavMenuItems } from "@/lib/cms/resolve-nav-menu";
@@ -34,6 +35,8 @@ import type {
   NavMenuItemView,
   PageBlockView,
   SiteSettingsView,
+  SocialDisplaySettings,
+  SocialLinkView,
   ThemeColorsView,
   WalletPolicyContent,
 } from "@/lib/cms/types";
@@ -362,4 +365,83 @@ export async function getWalletPolicyContentSanitized(): Promise<WalletPolicyCon
     ...content,
     intro: introHasHtml ? sanitizeRichHtml(content.intro) : content.intro,
   };
+}
+
+const DEFAULT_SOCIAL_LINKS_FALLBACK: SocialLinkView[] = SOCIAL_PLATFORMS.filter(
+  (p) =>
+    p.id === "facebook" ||
+    p.id === "instagram" ||
+    p.id === "tiktok" ||
+    p.id === "youtube",
+).map((p, i) => ({
+  id: `default-${p.id}`,
+  platform: p.id,
+  label: p.labelAr,
+  url: p.defaultUrl,
+  sortOrder: i,
+  enabled: true,
+}));
+
+async function loadSocialLinksRaw(): Promise<SocialLinkView[]> {
+  const rows = await prisma.socialLink.findMany({
+    orderBy: { sortOrder: "asc" },
+  });
+  if (rows.length === 0) return DEFAULT_SOCIAL_LINKS_FALLBACK;
+  return rows.map((r) => ({
+    id: r.id,
+    platform: r.platform,
+    label: r.label,
+    url: r.url,
+    sortOrder: r.sortOrder,
+    enabled: r.enabled,
+  }));
+}
+
+const cachedSocialLinks = unstable_cache(loadSocialLinksRaw, ["cms-social-links"], {
+  tags: [CMS_CACHE_TAG],
+});
+
+export async function getSocialLinks(): Promise<SocialLinkView[]> {
+  const links = await cachedSocialLinks();
+  return links.filter((l) => l.enabled);
+}
+
+async function loadSocialDisplaySettingsRaw(): Promise<SocialDisplaySettings> {
+  const rows = await prisma.siteSetting.findMany({
+    where: {
+      key: {
+        in: [
+          "socialShowHeader",
+          "socialShowFooter",
+          "socialShowSide",
+          "socialSidePosition",
+          "socialClickMode",
+        ],
+      },
+    },
+  });
+  const map = new Map(rows.map((r) => [r.key, r.value]));
+  const get = (key: string, fallback: string) =>
+    map.get(key) ?? DEFAULT_SITE_SETTINGS[key] ?? fallback;
+
+  const sidePosition = get("socialSidePosition", "start");
+  const clickMode = get("socialClickMode", "chooser");
+
+  return {
+    showHeader: get("socialShowHeader", "true") !== "false",
+    showFooter: get("socialShowFooter", "false") === "true",
+    showSide: get("socialShowSide", "false") === "true",
+    sidePosition: sidePosition === "end" ? "end" : "start",
+    clickMode: clickMode === "direct" ? "direct" : "chooser",
+  };
+}
+
+const cachedSocialDisplay = unstable_cache(
+  loadSocialDisplaySettingsRaw,
+  ["cms-social-display"],
+  { tags: [CMS_CACHE_TAG] },
+);
+
+export async function getSocialDisplaySettings(): Promise<SocialDisplaySettings> {
+  return cachedSocialDisplay();
 }

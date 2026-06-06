@@ -23,6 +23,11 @@ export const DEFAULT_SITE_SETTINGS: Record<string, string> = {
   logoUrl: "",
   marqueeEnabled: "true",
   metaDescription: "أدوات المنزل العصري — Tooliano",
+  socialShowHeader: "true",
+  socialShowFooter: "false",
+  socialShowSide: "false",
+  socialSidePosition: "start",
+  socialClickMode: "chooser",
   ...DEFAULT_THEME_COLORS,
 };
 

@@ -86,3 +86,20 @@ export type FooterColumnView = {
     external: boolean;
   }[];
 };
+
+export type SocialLinkView = {
+  id: string;
+  platform: string;
+  label: string;
+  url: string;
+  sortOrder: number;
+  enabled: boolean;
+};
+
+export type SocialDisplaySettings = {
+  showHeader: boolean;
+  showFooter: boolean;
+  showSide: boolean;
+  sidePosition: "start" | "end";
+  clickMode: "chooser" | "direct";
+};
