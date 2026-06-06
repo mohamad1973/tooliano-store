@@ -194,6 +194,14 @@ export async function seedCms(prisma: PrismaClient) {
     socialShowSide: "false",
     socialSidePosition: "start",
     socialClickMode: "chooser",
+    mobileNavMode: "burger",
+    mobileDrawerSide: "start",
+    mobileShowMarquee: "true",
+    mobileShowTagline: "false",
+    mobileSocialShowFooter: "true",
+    mobileSocialShowHeader: "false",
+    mobileFooterCompact: "true",
+    mobileFooterShowColumns: "true",
   })) {
     const exists = await prisma.siteSetting.findUnique({ where: { key } });
     if (!exists) {

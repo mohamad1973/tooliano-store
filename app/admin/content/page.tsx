@@ -50,6 +50,11 @@ const SECTIONS = [
     desc: "أيقونات السوشيال، الروابط، الهيدر/الفوتر/الجانب",
   },
   {
+    href: "/admin/content/mobile",
+    title: "الموبايل",
+    desc: "burger drawer، سوشيال الموبايل، بنرات/أقسام، فوتر مضغوط",
+  },
+  {
     href: "/admin/content/campaign",
     title: "صفحات الحملة",
     desc: "FAQ، كيف يعمل، سياسة المحفظة",

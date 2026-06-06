@@ -103,3 +103,14 @@ export type SocialDisplaySettings = {
   sidePosition: "start" | "end";
   clickMode: "chooser" | "direct";
 };
+
+export type MobileDisplaySettings = {
+  navMode: "burger" | "scroll";
+  drawerSide: "start" | "end";
+  showMarquee: boolean;
+  showTagline: boolean;
+  socialShowFooter: boolean;
+  socialShowHeader: boolean;
+  footerCompact: boolean;
+  footerShowColumns: boolean;
+};

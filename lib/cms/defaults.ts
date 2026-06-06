@@ -28,6 +28,14 @@ export const DEFAULT_SITE_SETTINGS: Record<string, string> = {
   socialShowSide: "false",
   socialSidePosition: "start",
   socialClickMode: "chooser",
+  mobileNavMode: "burger",
+  mobileDrawerSide: "start",
+  mobileShowMarquee: "true",
+  mobileShowTagline: "false",
+  mobileSocialShowFooter: "true",
+  mobileSocialShowHeader: "false",
+  mobileFooterCompact: "true",
+  mobileFooterShowColumns: "true",
   ...DEFAULT_THEME_COLORS,
 };
 

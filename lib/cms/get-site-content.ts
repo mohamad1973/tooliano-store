@@ -37,6 +37,7 @@ import type {
   SiteSettingsView,
   SocialDisplaySettings,
   SocialLinkView,
+  MobileDisplaySettings,
   ThemeColorsView,
   WalletPolicyContent,
 } from "@/lib/cms/types";
@@ -444,4 +445,48 @@ const cachedSocialDisplay = unstable_cache(
 
 export async function getSocialDisplaySettings(): Promise<SocialDisplaySettings> {
   return cachedSocialDisplay();
+}
+
+const MOBILE_SETTING_KEYS = [
+  "mobileNavMode",
+  "mobileDrawerSide",
+  "mobileShowMarquee",
+  "mobileShowTagline",
+  "mobileSocialShowFooter",
+  "mobileSocialShowHeader",
+  "mobileFooterCompact",
+  "mobileFooterShowColumns",
+] as const;
+
+async function loadMobileDisplaySettingsRaw(): Promise<MobileDisplaySettings> {
+  const rows = await prisma.siteSetting.findMany({
+    where: { key: { in: [...MOBILE_SETTING_KEYS] } },
+  });
+  const map = new Map(rows.map((r) => [r.key, r.value]));
+  const get = (key: string, fallback: string) =>
+    map.get(key) ?? DEFAULT_SITE_SETTINGS[key] ?? fallback;
+
+  const navMode = get("mobileNavMode", "burger");
+  const drawerSide = get("mobileDrawerSide", "start");
+
+  return {
+    navMode: navMode === "scroll" ? "scroll" : "burger",
+    drawerSide: drawerSide === "end" ? "end" : "start",
+    showMarquee: get("mobileShowMarquee", "true") !== "false",
+    showTagline: get("mobileShowTagline", "false") === "true",
+    socialShowFooter: get("mobileSocialShowFooter", "true") !== "false",
+    socialShowHeader: get("mobileSocialShowHeader", "false") === "true",
+    footerCompact: get("mobileFooterCompact", "true") !== "false",
+    footerShowColumns: get("mobileFooterShowColumns", "true") !== "false",
+  };
+}
+
+const cachedMobileDisplay = unstable_cache(
+  loadMobileDisplaySettingsRaw,
+  ["cms-mobile-display"],
+  { tags: [CMS_CACHE_TAG] },
+);
+
+export async function getMobileDisplaySettings(): Promise<MobileDisplaySettings> {
+  return cachedMobileDisplay();
 }

@@ -92,13 +92,15 @@ const iconClass =
 
 type Props = {
   socialLinks: SocialLinkView[];
-  showSocial: boolean;
+  showSocialDesktop: boolean;
+  showSocialMobile: boolean;
   clickMode: "chooser" | "direct";
 };
 
 export function HeaderIconsSocial({
   socialLinks,
-  showSocial,
+  showSocialDesktop,
+  showSocialMobile,
   clickMode,
 }: Props) {
   const base = WP_STORE_ORIGIN;
@@ -122,12 +124,20 @@ export function HeaderIconsSocial({
         {iconWrap(`${WP_WISHLIST_URL}`, "المفضلة", <IconHeart />)}
       </div>
 
-      {showSocial && socialLinks.length > 0 ? (
+      {showSocialDesktop && socialLinks.length > 0 ? (
         <SocialIconsList
           links={socialLinks}
           clickMode={clickMode}
           layout="horizontal"
-          className="ps-2 sm:ps-4"
+          className="hidden ps-2 md:flex sm:ps-4"
+        />
+      ) : null}
+      {showSocialMobile && socialLinks.length > 0 ? (
+        <SocialIconsList
+          links={socialLinks}
+          clickMode={clickMode}
+          layout="horizontal"
+          className="flex ps-2 md:hidden sm:ps-4"
         />
       ) : null}
     </div>
