@@ -2,15 +2,23 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import { LiveRemainingBadge } from "@/components/campaign/LiveRemainingBadge";
 import { normalizeProductImageSrc } from "@/lib/product-image-src";
 import type { ProductImage } from "@/types/product";
 
 type Props = {
   images: ProductImage[];
   productName: string;
+  submissionId?: string;
+  initialRemaining?: number;
 };
 
-export function ProductGallery({ images, productName }: Props) {
+export function ProductGallery({
+  images,
+  productName,
+  submissionId,
+  initialRemaining,
+}: Props) {
   const list = images
     .map((img) => ({
       ...img,
@@ -39,6 +47,14 @@ export function ProductGallery({ images, productName }: Props) {
           sizes="(max-width: 768px) 100vw, 50vw"
           priority
         />
+        {submissionId != null && initialRemaining != null ? (
+          <div className="absolute end-3 top-3 z-10">
+            <LiveRemainingBadge
+              submissionId={submissionId}
+              initialRemaining={initialRemaining}
+            />
+          </div>
+        ) : null}
       </div>
       {list.length > 1 ? (
         <ul className="flex gap-2 overflow-x-auto pb-1">

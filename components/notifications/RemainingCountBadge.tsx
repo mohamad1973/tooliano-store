@@ -22,12 +22,12 @@ export function RemainingCountBadge({
       title={`${remaining} قطعة متبقية`}
       dir="rtl"
     >
+      <span className="text-[10px] font-semibold text-brand-navy/75">متبقى</span>
       <span
         className={`inline-flex items-center justify-center rounded-full bg-red-600 px-1.5 font-bold tabular-nums leading-none text-white shadow-sm ring-2 ring-white ${circleClass}`}
       >
         {label}
       </span>
-      <span className="text-[10px] font-semibold text-brand-navy/75">متبقى</span>
     </span>
   );
 }

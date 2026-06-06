@@ -106,7 +106,6 @@ export default async function OfferCampaignPage({ params }: Props) {
           <LiveCampaignProgress
             submissionId={campaign.id}
             initial={progressInitial}
-            showCircleBadge
           />
         </div>
       </section>
@@ -116,6 +115,8 @@ export default async function OfferCampaignPage({ params }: Props) {
           <ProductGallery
             images={campaign.images}
             productName={campaign.productName}
+            submissionId={campaign.id}
+            initialRemaining={progressInitial.remaining}
           />
           <div className="flex flex-col gap-6">
             <PriceComparison
