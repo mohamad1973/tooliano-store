@@ -7,6 +7,9 @@ import "./globals.css";
 import { SITE_NAME } from "@/lib/constants";
 import { PWA_THEME_COLOR } from "@/lib/pwa/brand";
 
+/** تجنّب prerender أثناء البناء — كل الصفحات تعتمد CMS/Prisma في layout */
+export const dynamic = "force-dynamic";
+
 const cairo = Cairo({
   variable: "--font-cairo",
   subsets: ["arabic", "latin"],
