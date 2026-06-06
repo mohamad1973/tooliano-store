@@ -59,10 +59,14 @@ function settingGet(map: SiteSettingMap, key: string, fallback: string): string 
 
 /** استعلام واحد لكل إعدادات SiteSetting — يُستخدم من الهيدر/الفوتر/الثيم/السوشيال/الموبايل */
 async function loadSiteSettingMapRaw(): Promise<SiteSettingMap> {
-  const rows = await prisma.siteSetting.findMany({
-    select: { key: true, value: true },
-  });
-  return Object.fromEntries(rows.map((r) => [r.key, r.value]));
+  try {
+    const rows = await prisma.siteSetting.findMany({
+      select: { key: true, value: true },
+    });
+    return Object.fromEntries(rows.map((r) => [r.key, r.value]));
+  } catch {
+    return {};
+  }
 }
 
 const cachedSettingMap = unstable_cache(
