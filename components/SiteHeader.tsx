@@ -48,6 +48,7 @@ export async function SiteHeader() {
               <MobileNavDrawer
                 items={menuItems}
                 drawerSide={mobileDisplay.drawerSide}
+                siteName={settings.siteName}
               />
             ) : null}
 

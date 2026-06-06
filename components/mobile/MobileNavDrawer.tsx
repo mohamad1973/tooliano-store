@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import type { NavMenuItemView } from "@/lib/cms/types";
 import { WP_STORE_ORIGIN, WP_WISHLIST_URL } from "@/lib/constants";
 
 type Props = {
   items: NavMenuItemView[];
   drawerSide: "start" | "end";
+  siteName?: string;
 };
 
 function isHrefActive(pathname: string, search: string, href: string): boolean {
@@ -23,13 +25,51 @@ function isHrefActive(pathname: string, search: string, href: string): boolean {
   }
 }
 
-function DrawerInner({ items, drawerSide }: Props) {
+function MenuIcon({ open }: { open: boolean }) {
+  if (open) {
+    return (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        aria-hidden
+      >
+        <path d="M18 6L6 18M6 6l12 12" />
+      </svg>
+    );
+  }
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      aria-hidden
+    >
+      <path d="M3 12h18M3 6h18M3 18h18" />
+    </svg>
+  );
+}
+
+function DrawerInner({ items, drawerSide, siteName }: Props) {
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const search = searchParams.toString()
     ? `?${searchParams.toString()}`
     : "";
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     setOpen(false);
@@ -43,55 +83,60 @@ function DrawerInner({ items, drawerSide }: Props) {
     };
   }, [open]);
 
-  const panelSide =
-    drawerSide === "end"
-      ? "end-0 translate-x-full data-[open=true]:translate-x-0"
-      : "start-0 -translate-x-full data-[open=true]:translate-x-0";
+  useEffect(() => {
+    if (!open) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open]);
 
-  return (
+  const fromRight = drawerSide === "start";
+  const panelPosition = fromRight ? "right-0" : "left-0";
+  const panelClosed = fromRight ? "translate-x-full" : "-translate-x-full";
+  const panelOpen = "translate-x-0";
+
+  const linkClass = (active: boolean) =>
+    [
+      "block rounded-full px-4 py-2.5 text-sm font-semibold transition",
+      active
+        ? "bg-brand-gold text-brand-navy shadow-md shadow-brand-gold/30"
+        : "text-brand-navy/90 hover:bg-brand-gray hover:text-brand-navy",
+    ].join(" ");
+
+  const drawerPanel = (
     <>
       <button
         type="button"
-        onClick={() => setOpen(true)}
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-brand-navy transition hover:bg-brand-gold/20 hover:text-brand-gold md:hidden"
-        aria-label="فتح القائمة"
-        aria-expanded={open}
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="22"
-          height="22"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          aria-hidden
-        >
-          <path d="M3 12h18M3 6h18M3 18h18" />
-        </svg>
-      </button>
-
-      {open ? (
-        <button
-          type="button"
-          className="fixed inset-0 z-[100] bg-brand-navy/40 md:hidden"
-          aria-label="إغلاق القائمة"
-          onClick={() => setOpen(false)}
-        />
-      ) : null}
+        className={`fixed inset-0 z-[200] bg-brand-navy/50 backdrop-blur-sm transition-opacity duration-300 md:hidden ${
+          open
+            ? "pointer-events-auto opacity-100"
+            : "pointer-events-none opacity-0"
+        }`}
+        aria-label="إغلاق القائمة"
+        aria-hidden={!open}
+        tabIndex={open ? 0 : -1}
+        onClick={() => setOpen(false)}
+      />
 
       <aside
-        data-open={open}
-        className={`fixed top-0 z-[101] flex h-full w-[min(100vw-3rem,20rem)] flex-col border-brand-gray bg-brand-white shadow-2xl transition-transform duration-300 md:hidden ${panelSide}`}
+        className={`fixed top-0 z-[201] flex h-full w-[min(85vw,18rem)] flex-col border-brand-gray bg-brand-white shadow-2xl transition-transform duration-300 ease-out md:hidden ${panelPosition} ${
+          open ? panelOpen : panelClosed
+        } ${open ? "pointer-events-auto" : "pointer-events-none"}`}
         aria-hidden={!open}
+        aria-label="القائمة الجانبية"
         dir="rtl"
+        style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
       >
         <div className="flex items-center justify-between border-b border-brand-gray px-4 py-3">
-          <span className="font-bold text-brand-navy">القائمة</span>
+          <span className="font-bold text-brand-navy">
+            {siteName ? siteName : "القائمة"}
+          </span>
           <button
             type="button"
             onClick={() => setOpen(false)}
-            className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-brand-gray"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-brand-navy transition hover:bg-brand-gray"
             aria-label="إغلاق"
           >
             ✕
@@ -99,34 +144,39 @@ function DrawerInner({ items, drawerSide }: Props) {
         </div>
 
         <nav className="flex-1 overflow-y-auto p-3" aria-label="قائمة الأقسام">
-          <ul className="space-y-1">
-            {items.map((item) => {
-              const external = item.linkType === "external";
-              const active =
-                !external && isHrefActive(pathname, search, item.href);
-              return (
-                <li key={item.id}>
-                  <Link
-                    href={item.href}
-                    onClick={() => setOpen(false)}
-                    className={`block rounded-xl px-4 py-3 text-sm font-semibold transition ${
-                      active
-                        ? "bg-brand-gold text-brand-navy"
-                        : "text-brand-navy hover:bg-brand-gray"
-                    }`}
-                    {...(external
-                      ? { target: "_blank", rel: "noopener noreferrer" }
-                      : {})}
-                  >
-                    {item.label}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
+          {items.length === 0 ? (
+            <p className="px-2 py-3 text-sm text-brand-navy/50">
+              لا عناصر في القائمة
+            </p>
+          ) : (
+            <ul className="space-y-1">
+              {items.map((item) => {
+                const external = item.linkType === "external";
+                const active =
+                  !external && isHrefActive(pathname, search, item.href);
+                return (
+                  <li key={item.id}>
+                    <Link
+                      href={item.href}
+                      onClick={() => setOpen(false)}
+                      className={linkClass(active)}
+                      {...(external
+                        ? { target: "_blank", rel: "noopener noreferrer" }
+                        : {})}
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </nav>
 
-        <div className="border-t border-brand-gray p-3">
+        <div
+          className="border-t border-brand-gray p-3"
+          style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
+        >
           <p className="mb-2 text-xs font-semibold text-brand-navy/60">
             روابط سريعة
           </p>
@@ -134,7 +184,7 @@ function DrawerInner({ items, drawerSide }: Props) {
             <Link
               href="/account"
               onClick={() => setOpen(false)}
-              className="rounded-lg px-3 py-2 hover:bg-brand-gray"
+              className="rounded-lg px-3 py-2 text-brand-navy transition hover:bg-brand-gray"
             >
               حسابي
             </Link>
@@ -143,7 +193,7 @@ function DrawerInner({ items, drawerSide }: Props) {
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => setOpen(false)}
-              className="rounded-lg px-3 py-2 hover:bg-brand-gray"
+              className="rounded-lg px-3 py-2 text-brand-navy transition hover:bg-brand-gray"
             >
               سلة التسوق
             </Link>
@@ -152,7 +202,7 @@ function DrawerInner({ items, drawerSide }: Props) {
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => setOpen(false)}
-              className="rounded-lg px-3 py-2 hover:bg-brand-gray"
+              className="rounded-lg px-3 py-2 text-brand-navy transition hover:bg-brand-gray"
             >
               المفضلة
             </Link>
@@ -161,15 +211,29 @@ function DrawerInner({ items, drawerSide }: Props) {
       </aside>
     </>
   );
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-brand-navy transition hover:bg-brand-gold/20 hover:text-brand-gold md:hidden"
+        aria-label={open ? "إغلاق القائمة" : "فتح القائمة"}
+        aria-expanded={open}
+      >
+        <MenuIcon open={open} />
+      </button>
+
+      {mounted && typeof document !== "undefined"
+        ? createPortal(drawerPanel, document.body)
+        : null}
+    </>
+  );
 }
 
 export function MobileNavDrawer(props: Props) {
   return (
-    <Suspense
-      fallback={
-        <span className="h-9 w-9 md:hidden" aria-hidden />
-      }
-    >
+    <Suspense fallback={<span className="h-9 w-9 md:hidden" aria-hidden />}>
       <DrawerInner {...props} />
     </Suspense>
   );
