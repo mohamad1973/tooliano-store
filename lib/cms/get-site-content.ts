@@ -51,12 +51,32 @@ function parseJson<T>(raw: string, fallback: T): T {
   }
 }
 
-async function loadSiteSettingsRaw(): Promise<SiteSettingsView> {
-  const rows = await prisma.siteSetting.findMany();
-  const map = new Map(rows.map((r) => [r.key, r.value]));
-  const get = (key: string, fallback: string) =>
-    map.get(key) ?? DEFAULT_SITE_SETTINGS[key] ?? fallback;
+type SiteSettingMap = Record<string, string>;
 
+function settingGet(map: SiteSettingMap, key: string, fallback: string): string {
+  return map[key] ?? DEFAULT_SITE_SETTINGS[key] ?? fallback;
+}
+
+/** استعلام واحد لكل إعدادات SiteSetting — يُستخدم من الهيدر/الفوتر/الثيم/السوشيال/الموبايل */
+async function loadSiteSettingMapRaw(): Promise<SiteSettingMap> {
+  const rows = await prisma.siteSetting.findMany({
+    select: { key: true, value: true },
+  });
+  return Object.fromEntries(rows.map((r) => [r.key, r.value]));
+}
+
+const cachedSettingMap = unstable_cache(
+  loadSiteSettingMapRaw,
+  ["cms-site-setting-map"],
+  { tags: [CMS_CACHE_TAG] },
+);
+
+async function getSiteSettingMap(): Promise<SiteSettingMap> {
+  return cachedSettingMap();
+}
+
+function parseSiteSettings(map: SiteSettingMap): SiteSettingsView {
+  const get = (key: string, fallback: string) => settingGet(map, key, fallback);
   return {
     siteName: get("siteName", SITE_NAME),
     tagline: get("tagline", DEFAULT_SITE_SETTINGS.tagline),
@@ -66,6 +86,48 @@ async function loadSiteSettingsRaw(): Promise<SiteSettingsView> {
       "metaDescription",
       DEFAULT_SITE_SETTINGS.metaDescription,
     ),
+  };
+}
+
+function parseThemeColors(map: SiteSettingMap): ThemeColorsView {
+  const get = (key: keyof typeof DEFAULT_THEME_COLORS) =>
+    map[key] ?? DEFAULT_THEME_COLORS[key];
+  return {
+    brandNavy: get("colorBrandNavy"),
+    brandGold: get("colorBrandGold"),
+    brandGray: get("colorBrandGray"),
+    brandWhite: get("colorBrandWhite"),
+    background: get("colorBackground"),
+    foreground: get("colorForeground"),
+  };
+}
+
+function parseSocialDisplaySettings(map: SiteSettingMap): SocialDisplaySettings {
+  const get = (key: string, fallback: string) => settingGet(map, key, fallback);
+  const sidePosition = get("socialSidePosition", "start");
+  const clickMode = get("socialClickMode", "chooser");
+  return {
+    showHeader: get("socialShowHeader", "true") !== "false",
+    showFooter: get("socialShowFooter", "false") === "true",
+    showSide: get("socialShowSide", "false") === "true",
+    sidePosition: sidePosition === "end" ? "end" : "start",
+    clickMode: clickMode === "direct" ? "direct" : "chooser",
+  };
+}
+
+function parseMobileDisplaySettings(map: SiteSettingMap): MobileDisplaySettings {
+  const get = (key: string, fallback: string) => settingGet(map, key, fallback);
+  const navMode = get("mobileNavMode", "burger");
+  const drawerSide = get("mobileDrawerSide", "start");
+  return {
+    navMode: navMode === "scroll" ? "scroll" : "burger",
+    drawerSide: drawerSide === "end" ? "end" : "start",
+    showMarquee: get("mobileShowMarquee", "true") !== "false",
+    showTagline: get("mobileShowTagline", "false") === "true",
+    socialShowFooter: get("mobileSocialShowFooter", "true") !== "false",
+    socialShowHeader: get("mobileSocialShowHeader", "false") === "true",
+    footerCompact: get("mobileFooterCompact", "true") !== "false",
+    footerShowColumns: get("mobileFooterShowColumns", "true") !== "false",
   };
 }
 
@@ -170,9 +232,6 @@ async function loadFooterRaw(): Promise<FooterColumnView[]> {
   }));
 }
 
-const cachedSettings = unstable_cache(loadSiteSettingsRaw, ["cms-settings"], {
-  tags: [CMS_CACHE_TAG],
-});
 const cachedMarquee = unstable_cache(loadMarqueeItemsRaw, ["cms-marquee"], {
   tags: [CMS_CACHE_TAG],
 });
@@ -187,7 +246,7 @@ const cachedFooter = unstable_cache(loadFooterRaw, ["cms-footer"], {
 });
 
 export async function getSiteSettings(): Promise<SiteSettingsView> {
-  return cachedSettings();
+  return parseSiteSettings(await getSiteSettingMap());
 }
 
 export async function getMarqueeItems(): Promise<MarqueeItemView[]> {
@@ -319,28 +378,8 @@ export async function getNavMenuItems(): Promise<NavMenuItemView[]> {
   return resolveNavMenuItems(items);
 }
 
-async function loadThemeColorsRaw(): Promise<ThemeColorsView> {
-  const rows = await prisma.siteSetting.findMany();
-  const map = new Map(rows.map((r) => [r.key, r.value]));
-  const get = (key: keyof typeof DEFAULT_THEME_COLORS) =>
-    map.get(key) ?? DEFAULT_THEME_COLORS[key];
-
-  return {
-    brandNavy: get("colorBrandNavy"),
-    brandGold: get("colorBrandGold"),
-    brandGray: get("colorBrandGray"),
-    brandWhite: get("colorBrandWhite"),
-    background: get("colorBackground"),
-    foreground: get("colorForeground"),
-  };
-}
-
-const cachedTheme = unstable_cache(loadThemeColorsRaw, ["cms-theme"], {
-  tags: [CMS_CACHE_TAG],
-});
-
 export async function getThemeColors(): Promise<ThemeColorsView> {
-  return cachedTheme();
+  return parseThemeColors(await getSiteSettingMap());
 }
 
 async function loadPageBlocksRaw(pageKey: string): Promise<PageBlockView[]> {
@@ -407,86 +446,10 @@ export async function getSocialLinks(): Promise<SocialLinkView[]> {
   return links.filter((l) => l.enabled);
 }
 
-async function loadSocialDisplaySettingsRaw(): Promise<SocialDisplaySettings> {
-  const rows = await prisma.siteSetting.findMany({
-    where: {
-      key: {
-        in: [
-          "socialShowHeader",
-          "socialShowFooter",
-          "socialShowSide",
-          "socialSidePosition",
-          "socialClickMode",
-        ],
-      },
-    },
-  });
-  const map = new Map(rows.map((r) => [r.key, r.value]));
-  const get = (key: string, fallback: string) =>
-    map.get(key) ?? DEFAULT_SITE_SETTINGS[key] ?? fallback;
-
-  const sidePosition = get("socialSidePosition", "start");
-  const clickMode = get("socialClickMode", "chooser");
-
-  return {
-    showHeader: get("socialShowHeader", "true") !== "false",
-    showFooter: get("socialShowFooter", "false") === "true",
-    showSide: get("socialShowSide", "false") === "true",
-    sidePosition: sidePosition === "end" ? "end" : "start",
-    clickMode: clickMode === "direct" ? "direct" : "chooser",
-  };
-}
-
-const cachedSocialDisplay = unstable_cache(
-  loadSocialDisplaySettingsRaw,
-  ["cms-social-display"],
-  { tags: [CMS_CACHE_TAG] },
-);
-
 export async function getSocialDisplaySettings(): Promise<SocialDisplaySettings> {
-  return cachedSocialDisplay();
+  return parseSocialDisplaySettings(await getSiteSettingMap());
 }
-
-const MOBILE_SETTING_KEYS = [
-  "mobileNavMode",
-  "mobileDrawerSide",
-  "mobileShowMarquee",
-  "mobileShowTagline",
-  "mobileSocialShowFooter",
-  "mobileSocialShowHeader",
-  "mobileFooterCompact",
-  "mobileFooterShowColumns",
-] as const;
-
-async function loadMobileDisplaySettingsRaw(): Promise<MobileDisplaySettings> {
-  const rows = await prisma.siteSetting.findMany({
-    where: { key: { in: [...MOBILE_SETTING_KEYS] } },
-  });
-  const map = new Map(rows.map((r) => [r.key, r.value]));
-  const get = (key: string, fallback: string) =>
-    map.get(key) ?? DEFAULT_SITE_SETTINGS[key] ?? fallback;
-
-  const navMode = get("mobileNavMode", "burger");
-  const drawerSide = get("mobileDrawerSide", "start");
-
-  return {
-    navMode: navMode === "scroll" ? "scroll" : "burger",
-    drawerSide: drawerSide === "end" ? "end" : "start",
-    showMarquee: get("mobileShowMarquee", "true") !== "false",
-    showTagline: get("mobileShowTagline", "false") === "true",
-    socialShowFooter: get("mobileSocialShowFooter", "true") !== "false",
-    socialShowHeader: get("mobileSocialShowHeader", "false") === "true",
-    footerCompact: get("mobileFooterCompact", "true") !== "false",
-    footerShowColumns: get("mobileFooterShowColumns", "true") !== "false",
-  };
-}
-
-const cachedMobileDisplay = unstable_cache(
-  loadMobileDisplaySettingsRaw,
-  ["cms-mobile-display"],
-  { tags: [CMS_CACHE_TAG] },
-);
 
 export async function getMobileDisplaySettings(): Promise<MobileDisplaySettings> {
-  return cachedMobileDisplay();
+  return parseMobileDisplaySettings(await getSiteSettingMap());
 }

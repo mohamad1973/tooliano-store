@@ -7,7 +7,7 @@
 
 | Key | ملاحظة |
 |-----|--------|
-| `DATABASE_URL` | رابط MySQL Hostinger |
+| `DATABASE_URL` | رابط MySQL Hostinger — يُفضّل `?connection_limit=3` (يُضاف تلقائياً في الكود إن غاب) |
 | `JWT_SECRET` | 32+ حرف — لا تغيّره بعد النشر |
 | `WC_BASE_URL` | `https://tooliano.com` |
 | `WC_CONSUMER_KEY` | من WooCommerce REST API |

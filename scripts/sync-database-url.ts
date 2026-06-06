@@ -17,7 +17,7 @@ function buildMysqlUrl(input: {
   const encUser = encodeURIComponent(input.user);
   const encPass = encodeURIComponent(input.password);
   const port = input.port || "3306";
-  return `mysql://${encUser}:${encPass}@${input.host}:${port}/${input.database}?connection_limit=5`;
+  return `mysql://${encUser}:${encPass}@${input.host}:${port}/${input.database}?connection_limit=3`;
 }
 
 function upsertEnvLine(content: string, key: string, value: string): string {
