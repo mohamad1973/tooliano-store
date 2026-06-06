@@ -1,9 +1,12 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AdminCmsMessage } from "@/components/admin/cms/AdminCmsMessage";
 import { SocialLinksListEditor } from "@/components/admin/cms/SocialLinksListEditor";
+import {
+  patchMobileSettings,
+  type MobileSaveStatusHandler,
+} from "@/components/admin/cms/mobile-save-utils";
 import type { SocialLinkView } from "@/lib/cms/types";
 
 type Props = {
@@ -11,6 +14,7 @@ type Props = {
   initialMobileSocialShowHeader: boolean;
   initialMobileSocialShowFooter: boolean;
   initialClickMode: "chooser" | "direct";
+  onSaveStatus?: MobileSaveStatusHandler;
 };
 
 export function MobileSocialPanel({
@@ -18,18 +22,39 @@ export function MobileSocialPanel({
   initialMobileSocialShowHeader,
   initialMobileSocialShowFooter,
   initialClickMode,
+  onSaveStatus,
 }: Props) {
-  const router = useRouter();
   const [showHeader, setShowHeader] = useState(initialMobileSocialShowHeader);
   const [showFooter, setShowFooter] = useState(initialMobileSocialShowFooter);
   const [clickMode, setClickMode] = useState(initialClickMode);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setShowHeader(initialMobileSocialShowHeader);
+    setShowFooter(initialMobileSocialShowFooter);
+    setClickMode(initialClickMode);
+  }, [
+    initialMobileSocialShowHeader,
+    initialMobileSocialShowFooter,
+    initialClickMode,
+  ]);
+
+  useEffect(() => {
+    if (!message) return;
+    const t = setTimeout(() => setMessage(null), 3000);
+    return () => clearTimeout(t);
+  }, [message]);
 
   async function saveMobilePlacement(
     patch: Partial<{ socialShowHeader: boolean; socialShowFooter: boolean }>,
   ) {
     setError(null);
+    setMessage(null);
+    setSaving(true);
+    onSaveStatus?.({ type: "saving", text: "جاري الحفظ…" });
+
     const body: Record<string, boolean> = {};
     if (patch.socialShowHeader !== undefined) {
       body.mobileSocialShowHeader = patch.socialShowHeader;
@@ -37,44 +62,53 @@ export function MobileSocialPanel({
     if (patch.socialShowFooter !== undefined) {
       body.mobileSocialShowFooter = patch.socialShowFooter;
     }
-    const res = await fetch("/api/admin/cms/mobile-settings", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    if (!res.ok) {
-      setError("فشل حفظ إعدادات الموبايل");
+
+    const result = await patchMobileSettings(body);
+    setSaving(false);
+
+    if (!result.ok) {
+      setError(result.error);
+      onSaveStatus?.({ type: "error", text: result.error });
       return;
     }
+
     if (patch.socialShowHeader !== undefined) {
       setShowHeader(patch.socialShowHeader);
     }
     if (patch.socialShowFooter !== undefined) {
       setShowFooter(patch.socialShowFooter);
     }
-    setMessage("تم حفظ إعدادات الظهور على الموبايل");
-    router.refresh();
+    setMessage("تم الحفظ ✓");
+    onSaveStatus?.({ type: "success", text: "تم حفظ إعدادات السوشيال ✓" });
   }
 
   async function saveClickMode(mode: "chooser" | "direct") {
     setError(null);
+    setMessage(null);
+    setSaving(true);
+    onSaveStatus?.({ type: "saving", text: "جاري الحفظ…" });
+
     const res = await fetch("/api/admin/cms/social-settings", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ socialClickMode: mode }),
     });
+    setSaving(false);
+
     if (!res.ok) {
-      setError("فشل حفظ وضع النقر");
+      const err = "فشل حفظ وضع النقر";
+      setError(err);
+      onSaveStatus?.({ type: "error", text: err });
       return;
     }
     setClickMode(mode);
-    setMessage("تم حفظ وضع النقر");
-    router.refresh();
+    setMessage("تم الحفظ ✓");
+    onSaveStatus?.({ type: "success", text: "تم حفظ وضع النقر ✓" });
   }
 
   return (
     <div className="space-y-6" dir="rtl">
-      <AdminCmsMessage message={message} error={error} />
+      <AdminCmsMessage message={message} error={error} saving={saving} />
 
       <section>
         <h3 className="text-sm font-bold text-brand-navy">
@@ -90,6 +124,7 @@ export function MobileSocialPanel({
           <label className="flex cursor-pointer items-center gap-2 text-sm">
             <input
               type="checkbox"
+              disabled={saving}
               checked={showHeader}
               onChange={(e) =>
                 void saveMobilePlacement({
@@ -102,6 +137,7 @@ export function MobileSocialPanel({
           <label className="flex cursor-pointer items-center gap-2 text-sm">
             <input
               type="checkbox"
+              disabled={saving}
               checked={showFooter}
               onChange={(e) =>
                 void saveMobilePlacement({
@@ -121,6 +157,7 @@ export function MobileSocialPanel({
             <input
               type="radio"
               name="mobileClickMode"
+              disabled={saving}
               checked={clickMode === "chooser"}
               onChange={() => void saveClickMode("chooser")}
             />
@@ -130,6 +167,7 @@ export function MobileSocialPanel({
             <input
               type="radio"
               name="mobileClickMode"
+              disabled={saving}
               checked={clickMode === "direct"}
               onChange={() => void saveClickMode("direct")}
             />

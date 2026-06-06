@@ -2,6 +2,11 @@ import { prisma } from "@/lib/db/prisma";
 import { requireApiAdmin, isSessionResponse } from "@/lib/auth/api-session";
 import { cmsMutationResponse, parseBody } from "@/lib/cms/admin-api";
 import { DEFAULT_SITE_SETTINGS } from "@/lib/cms/defaults";
+import {
+  parseMobileSettingsPatch,
+  type MobileSettingsApiBody,
+} from "@/lib/cms/mobile-settings-api";
+import type { MobileDisplaySettings } from "@/lib/cms/types";
 
 const MOBILE_KEYS = [
   "mobileNavMode",
@@ -49,43 +54,15 @@ export async function PATCH(request: Request) {
   const session = await requireApiAdmin();
   if (isSessionResponse(session)) return session;
 
-  const body = await parseBody<{
-    mobileNavMode?: "burger" | "scroll";
-    mobileDrawerSide?: "start" | "end";
-    mobileShowMarquee?: boolean;
-    mobileShowTagline?: boolean;
-    mobileSocialShowFooter?: boolean;
-    mobileSocialShowHeader?: boolean;
-    mobileFooterCompact?: boolean;
-    mobileFooterShowColumns?: boolean;
-  }>(request);
+  const body = await parseBody<
+    Partial<MobileDisplaySettings> & MobileSettingsApiBody
+  >(request);
   if (body instanceof Response) return body;
 
-  const updates: Record<string, string> = {};
+  const updates = parseMobileSettingsPatch(body);
 
-  if (body.mobileNavMode === "burger" || body.mobileNavMode === "scroll") {
-    updates.mobileNavMode = body.mobileNavMode;
-  }
-  if (body.mobileDrawerSide === "start" || body.mobileDrawerSide === "end") {
-    updates.mobileDrawerSide = body.mobileDrawerSide;
-  }
-  if (typeof body.mobileShowMarquee === "boolean") {
-    updates.mobileShowMarquee = String(body.mobileShowMarquee);
-  }
-  if (typeof body.mobileShowTagline === "boolean") {
-    updates.mobileShowTagline = String(body.mobileShowTagline);
-  }
-  if (typeof body.mobileSocialShowFooter === "boolean") {
-    updates.mobileSocialShowFooter = String(body.mobileSocialShowFooter);
-  }
-  if (typeof body.mobileSocialShowHeader === "boolean") {
-    updates.mobileSocialShowHeader = String(body.mobileSocialShowHeader);
-  }
-  if (typeof body.mobileFooterCompact === "boolean") {
-    updates.mobileFooterCompact = String(body.mobileFooterCompact);
-  }
-  if (typeof body.mobileFooterShowColumns === "boolean") {
-    updates.mobileFooterShowColumns = String(body.mobileFooterShowColumns);
+  if (Object.keys(updates).length === 0) {
+    return Response.json({ error: "لا توجد حقول صالحة" }, { status: 400 });
   }
 
   for (const [key, value] of Object.entries(updates)) {

@@ -1,42 +1,60 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AdminCmsMessage } from "@/components/admin/cms/AdminCmsMessage";
+import {
+  patchMobileSettings,
+  type MobileSaveStatusHandler,
+} from "@/components/admin/cms/mobile-save-utils";
 import type { MobileDisplaySettings } from "@/lib/cms/types";
 
 type Props = {
   initial: MobileDisplaySettings;
+  onSaveStatus?: MobileSaveStatusHandler;
 };
 
-export function MobileHeaderSettingsForm({ initial }: Props) {
-  const router = useRouter();
+export function MobileHeaderSettingsForm({ initial, onSaveStatus }: Props) {
   const [settings, setSettings] = useState(initial);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setSettings(initial);
+  }, [initial]);
+
+  useEffect(() => {
+    if (!message) return;
+    const t = setTimeout(() => setMessage(null), 3000);
+    return () => clearTimeout(t);
+  }, [message]);
 
   async function save(patch: Partial<MobileDisplaySettings>) {
     setError(null);
-    const res = await fetch("/api/admin/cms/mobile-settings", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(patch),
-    });
-    if (!res.ok) {
-      setError("فشل الحفظ");
+    setMessage(null);
+    setSaving(true);
+    onSaveStatus?.({ type: "saving", text: "جاري الحفظ…" });
+
+    const result = await patchMobileSettings(patch);
+    setSaving(false);
+
+    if (!result.ok) {
+      setError(result.error);
+      onSaveStatus?.({ type: "error", text: result.error });
       return;
     }
+
     setSettings((prev) => ({ ...prev, ...patch }));
-    setMessage("تم الحفظ");
-    router.refresh();
+    setMessage("تم الحفظ ✓");
+    onSaveStatus?.({ type: "success", text: "تم حفظ إعدادات الهيدر ✓" });
   }
 
   return (
     <div className="space-y-5" dir="rtl">
-      <AdminCmsMessage message={message} error={error} />
+      <AdminCmsMessage message={message} error={error} saving={saving} />
 
-      <fieldset className="space-y-2">
+      <fieldset className="space-y-2" disabled={saving}>
         <legend className="text-sm font-bold text-brand-navy">
           نمط القائمة على الموبايل
         </legend>
@@ -61,7 +79,7 @@ export function MobileHeaderSettingsForm({ initial }: Props) {
       </fieldset>
 
       {settings.navMode === "burger" ? (
-        <fieldset className="space-y-2">
+        <fieldset className="space-y-2" disabled={saving}>
           <legend className="text-sm font-bold text-brand-navy">
             جهة فتح الدرج (RTL)
           </legend>
@@ -90,6 +108,7 @@ export function MobileHeaderSettingsForm({ initial }: Props) {
         <label className="flex cursor-pointer items-center gap-2 text-sm">
           <input
             type="checkbox"
+            disabled={saving}
             checked={settings.showMarquee}
             onChange={(e) =>
               void save({ showMarquee: e.target.checked })
@@ -100,6 +119,7 @@ export function MobileHeaderSettingsForm({ initial }: Props) {
         <label className="flex cursor-pointer items-center gap-2 text-sm">
           <input
             type="checkbox"
+            disabled={saving}
             checked={settings.showTagline}
             onChange={(e) =>
               void save({ showTagline: e.target.checked })

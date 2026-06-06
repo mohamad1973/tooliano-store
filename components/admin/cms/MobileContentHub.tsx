@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { BannersEditor } from "@/components/admin/cms/BannersEditor";
 import { FooterEditor } from "@/components/admin/cms/FooterEditor";
 import { HomeSectionsDndEditor } from "@/components/admin/cms/HomeSectionsDndEditor";
 import { MobileFooterSettingsForm } from "@/components/admin/cms/MobileFooterSettingsForm";
 import { MobileHeaderSettingsForm } from "@/components/admin/cms/MobileHeaderSettingsForm";
 import { MobileSocialPanel } from "@/components/admin/cms/MobileSocialPanel";
+import type { MobileSaveStatus } from "@/components/admin/cms/mobile-save-utils";
 import type { MobileDisplaySettings, SocialLinkView } from "@/lib/cms/types";
 
 type HomeSection = {
@@ -57,6 +58,27 @@ type Props = {
   footerColumns: FooterColumn[];
 };
 
+function HubSaveToast({ status }: { status: MobileSaveStatus | null }) {
+  if (!status) return null;
+
+  const className =
+    status.type === "error"
+      ? "bg-red-50 text-red-800 border-red-200"
+      : status.type === "saving"
+        ? "bg-amber-50 text-amber-900 border-amber-200"
+        : "bg-green-50 text-green-800 border-green-200";
+
+  return (
+    <p
+      className={`sticky top-2 z-10 mb-4 rounded-xl border px-4 py-3 text-sm font-semibold shadow-sm ${className}`}
+      role="status"
+      aria-live="polite"
+    >
+      {status.text}
+    </p>
+  );
+}
+
 export function MobileContentHub({
   mobileSettings,
   socialLinks,
@@ -66,9 +88,22 @@ export function MobileContentHub({
   footerColumns,
 }: Props) {
   const [open, setOpen] = useState<SectionId | null>("header");
+  const [hubStatus, setHubStatus] = useState<MobileSaveStatus | null>(null);
+
+  const handleSaveStatus = useCallback((status: MobileSaveStatus | null) => {
+    setHubStatus(status);
+  }, []);
+
+  useEffect(() => {
+    if (!hubStatus || hubStatus.type === "saving") return;
+    const t = setTimeout(() => setHubStatus(null), 3000);
+    return () => clearTimeout(t);
+  }, [hubStatus]);
 
   return (
     <div className="space-y-3" dir="rtl">
+      <HubSaveToast status={hubStatus} />
+
       {SECTIONS.map((section) => {
         const isOpen = open === section.id;
         return (
@@ -93,7 +128,10 @@ export function MobileContentHub({
             {isOpen ? (
               <div className="border-t border-brand-gray px-5 py-5">
                 {section.id === "header" ? (
-                  <MobileHeaderSettingsForm initial={mobileSettings} />
+                  <MobileHeaderSettingsForm
+                    initial={mobileSettings}
+                    onSaveStatus={handleSaveStatus}
+                  />
                 ) : null}
 
                 {section.id === "social" ? (
@@ -106,6 +144,7 @@ export function MobileContentHub({
                       mobileSettings.socialShowFooter
                     }
                     initialClickMode={socialClickMode}
+                    onSaveStatus={handleSaveStatus}
                   />
                 ) : null}
 
@@ -137,6 +176,7 @@ export function MobileContentHub({
                         footerCompact: mobileSettings.footerCompact,
                         footerShowColumns: mobileSettings.footerShowColumns,
                       }}
+                      onSaveStatus={handleSaveStatus}
                     />
                     <div>
                       <h3 className="mb-3 font-bold text-brand-navy">
