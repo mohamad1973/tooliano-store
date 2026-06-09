@@ -37,6 +37,7 @@ export type AdminSubmissionCardData = {
   wooSyncStatus: string;
   wooSyncError: string | null;
   publishedOnStore: boolean;
+  affiliateCommissionPercent: number;
   vendor: { username: string };
 };
 
@@ -76,6 +77,9 @@ export function AdminSubmissionCard({
           : ""}
         {item.vendorSettlementUnitPrice != null
           ? ` · تسوية تاجر ${item.vendorSettlementUnitPrice}`
+          : ""}
+        {item.affiliateCommissionPercent > 0
+          ? ` · عمولة إحالة ${item.affiliateCommissionPercent}%`
           : ""}
       </p>
       {item.productImageUrl ? (

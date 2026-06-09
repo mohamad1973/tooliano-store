@@ -13,7 +13,11 @@ export async function enrichWalletTransactions(
   transactions: WalletTransaction[],
 ): Promise<EnrichedWalletTx[]> {
   const orderIds = transactions
-    .filter((t) => t.referenceType === "order" && t.referenceId)
+    .filter(
+      (t) =>
+        (t.referenceType === "order" || t.referenceType === "affiliate_order") &&
+        t.referenceId,
+    )
     .map((t) => t.referenceId as string);
 
   const orders =
@@ -36,7 +40,8 @@ export async function enrichWalletTransactions(
       }
     }
     const order =
-      t.referenceType === "order" && t.referenceId
+      (t.referenceType === "order" || t.referenceType === "affiliate_order") &&
+      t.referenceId
         ? orderMap.get(t.referenceId)
         : undefined;
     return {

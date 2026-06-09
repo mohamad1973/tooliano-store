@@ -9,6 +9,7 @@ export async function createGroupBuyOrder(input: {
   buyerId: string;
   submissionId: string;
   quantity: number;
+  referrerUserId?: string | null;
 }) {
   const campaign = await requireSubmissionCampaign(input.submissionId);
   if (input.quantity < 1) throw new Error("الكمية غير صالحة");
@@ -34,6 +35,7 @@ export async function createGroupBuyOrder(input: {
       depositAmount,
       codAmount: lineTotal,
       status: ORDER_STATUS.PENDING_PAYMENT,
+      referrerUserId: input.referrerUserId ?? null,
     },
   });
 }

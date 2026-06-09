@@ -8,6 +8,7 @@ import {
 } from "@/lib/db/constants";
 import { issueDeliveryCodeForOrder } from "@/lib/campaign/issue-codes";
 import { unlockOrderDeposit } from "@/lib/wallet/ledger";
+import { reverseAffiliateCommissionForOrder } from "@/lib/affiliate/reverse-commission";
 
 export async function syncCampaigns(): Promise<{
   succeeded: number;
@@ -106,6 +107,7 @@ export async function failCampaign(submissionId: string) {
         idempotencyKey: `unlock:${order.id}:campaign-failed`,
       });
     }
+    await reverseAffiliateCommissionForOrder(order.id);
     await prisma.groupBuyOrder.update({
       where: { id: order.id },
       data: { status: ORDER_STATUS.CAMPAIGN_FAILED },

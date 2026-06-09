@@ -15,6 +15,7 @@ model User {
   phone        String?
   email        String?
   disabled     Boolean  @default(false)
+  referralCode String?  @unique
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -22,6 +23,7 @@ model User {
   productSubmissions    ProductSubmission[] @relation("VendorSubmissions")
   wallet                Wallet?
   groupBuyOrders        GroupBuyOrder[]     @relation("BuyerOrders")
+  referredOrders        GroupBuyOrder[]     @relation("ReferrerOrders")
   deliveryConfirmations DeliveryConfirmation[] @relation("ConfirmedByAgent")
   adminAuditLogs        AdminAuditLog[]       @relation("AdminActor")
   appNotifications            AppNotification[]
@@ -83,6 +85,7 @@ model ProductSubmission {
   wooSyncError              String?
   idempotencyKey            String?   @unique
   campaignOutcome           String    @default("ACTIVE")
+  affiliateCommissionPercent Float    @default(0)
   createdAt                 DateTime  @default(now())
   updatedAt                 DateTime  @updatedAt
 
@@ -138,6 +141,10 @@ model GroupBuyOrder {
   paymobOrderId    String?
   paymentRef       String?
   idempotencyKey   String?
+  referrerUserId   String?
+  referrer         User?     @relation("ReferrerOrders", fields: [referrerUserId], references: [id], onDelete: SetNull)
+  affiliateCommissionAmount Float?
+  affiliateCommissionPaidAt DateTime?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
@@ -146,6 +153,7 @@ model GroupBuyOrder {
 
   @@index([buyerId])
   @@index([submissionId, status])
+  @@index([referrerUserId])
 }
 
 model OrderPayment {

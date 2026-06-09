@@ -185,3 +185,100 @@ export async function getWalletSummary(userId: string) {
     totalBalance: wallet.availableBalance + wallet.lockedBalance,
   };
 }
+
+/** عمولة إحالة — تُضاف للرصيد المتاح دون قفل */
+export async function creditAffiliateCommission(input: {
+  userId: string;
+  orderId: string;
+  amount: number;
+  idempotencyKey: string;
+  note?: string;
+  metadata?: Record<string, unknown>;
+}) {
+  if (input.amount <= 0) return null;
+
+  const metaJson = input.metadata
+    ? JSON.stringify(input.metadata)
+    : undefined;
+
+  return prisma.$transaction(async (tx) => {
+    const wallet = await ensureWallet(input.userId, tx);
+    const available = wallet.availableBalance + input.amount;
+
+    await appendTransaction(tx, {
+      walletId: wallet.id,
+      type: WALLET_TX_TYPES.AFFILIATE_COMMISSION,
+      amount: input.amount,
+      availableBalance: available,
+      lockedBalance: wallet.lockedBalance,
+      referenceType: "affiliate_order",
+      referenceId: input.orderId,
+      idempotencyKey: input.idempotencyKey,
+      note: input.note ?? "عمولة إحالة",
+      metadata: metaJson,
+    });
+
+    return tx.wallet.update({
+      where: { id: wallet.id },
+      data: { availableBalance: available },
+    });
+  });
+}
+
+/** خصم عمولة عند فشل الصفقة — لا رصيد سالب */
+export async function reverseAffiliateCommission(input: {
+  userId: string;
+  orderId: string;
+  amount: number;
+  idempotencyKey: string;
+  note?: string;
+  metadata?: Record<string, unknown>;
+}) {
+  if (input.amount <= 0) return null;
+
+  const metaJson = input.metadata
+    ? JSON.stringify(input.metadata)
+    : undefined;
+
+  return prisma.$transaction(async (tx) => {
+    const wallet = await ensureWallet(input.userId, tx);
+    const deduct = Math.min(wallet.availableBalance, input.amount);
+    if (deduct <= 0) {
+      await appendTransaction(tx, {
+        walletId: wallet.id,
+        type: WALLET_TX_TYPES.AFFILIATE_REVERSAL,
+        amount: 0,
+        availableBalance: wallet.availableBalance,
+        lockedBalance: wallet.lockedBalance,
+        referenceType: "affiliate_order",
+        referenceId: input.orderId,
+        idempotencyKey: input.idempotencyKey,
+        note:
+          input.note ??
+          "خصم عمولة — الرصيد غير كافٍ للخصم الكامل",
+        metadata: metaJson,
+      });
+      return wallet;
+    }
+
+    const available = wallet.availableBalance - deduct;
+
+    await appendTransaction(tx, {
+      walletId: wallet.id,
+      type: WALLET_TX_TYPES.AFFILIATE_REVERSAL,
+      amount: deduct,
+      availableBalance: available,
+      lockedBalance: wallet.lockedBalance,
+      referenceType: "affiliate_order",
+      referenceId: input.orderId,
+      idempotencyKey: input.idempotencyKey,
+      note: input.note ?? "خصم عمولة — فشل الصفقة",
+      metadata: metaJson,
+    });
+
+    return tx.wallet.update({
+      where: { id: wallet.id },
+      data: { availableBalance: available },
+    });
+  });
+}

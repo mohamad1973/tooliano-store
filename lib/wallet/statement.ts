@@ -6,7 +6,7 @@ export type WalletStatementLine = {
   date: Date;
   productName: string;
   orderId: string | null;
-  kind: "deposit" | "unlock" | "settle" | "refund" | "other";
+  kind: "deposit" | "unlock" | "settle" | "refund" | "affiliate_credit" | "affiliate_reversal" | "other";
   title: string;
   description: string;
   amountPaid: number;
@@ -81,6 +81,48 @@ function buildOtherLine(tx: EnrichedWalletTx): WalletStatementLine {
   } else if (tx.type === WALLET_TX_TYPES.REFUND) {
     kind = "refund";
     title = `استرداد — «${productName}»`;
+  } else if (tx.type === WALLET_TX_TYPES.AFFILIATE_COMMISSION) {
+    kind = "affiliate_credit";
+    const percent = num(tx.parsedMeta?.percent);
+    const lineTotal = num(tx.parsedMeta?.lineTotal);
+    title = `عمولة إحالة — حجز «${productName}»`;
+    const parts = [title, `المبلغ: +${tx.amount}`];
+    if (percent != null) parts.push(`النسبة: ${percent}%`);
+    if (lineTotal != null) parts.push(`إجمالي الطلب المُحال: ${lineTotal}`);
+    return {
+      id: tx.id,
+      date: tx.createdAt,
+      productName,
+      orderId: tx.referenceId,
+      kind,
+      title,
+      description: parts.join(" · "),
+      amountPaid: tx.amount,
+      orderTotal: lineTotal,
+      paidOnOrder: null,
+      remainingOnOrder: null,
+    };
+  } else if (tx.type === WALLET_TX_TYPES.AFFILIATE_REVERSAL) {
+    kind = "affiliate_reversal";
+    const percent = num(tx.parsedMeta?.percent);
+    const lineTotal = num(tx.parsedMeta?.lineTotal);
+    title = `خصم عمولة — فشل صفقة «${productName}»`;
+    const parts = [title, `المبلغ: -${tx.amount}`];
+    if (percent != null) parts.push(`النسبة: ${percent}%`);
+    if (lineTotal != null) parts.push(`إجمالي الطلب: ${lineTotal}`);
+    return {
+      id: tx.id,
+      date: tx.createdAt,
+      productName,
+      orderId: tx.referenceId,
+      kind,
+      title,
+      description: parts.join(" · "),
+      amountPaid: -tx.amount,
+      orderTotal: lineTotal,
+      paidOnOrder: null,
+      remainingOnOrder: null,
+    };
   }
 
   return {

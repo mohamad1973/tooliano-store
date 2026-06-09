@@ -3,6 +3,7 @@ import { Cairo } from "next/font/google";
 import { ThemeVariables } from "@/components/ThemeVariables";
 import { PwaShell } from "@/components/pwa/PwaShell";
 import { SocialSideRail } from "@/components/social/SocialSideRail";
+import { AffiliateRefCaptureShell } from "@/components/affiliate/AffiliateRefCaptureShell";
 import "./globals.css";
 import { SITE_NAME } from "@/lib/constants";
 import { PWA_THEME_COLOR } from "@/lib/pwa/brand";
@@ -49,6 +50,7 @@ export default function RootLayout({
     <html lang="ar" dir="rtl" className={`${cairo.variable} h-full`}>
       <body className="min-h-full bg-brand-white font-sans text-brand-navy antialiased">
         <ThemeVariables />
+        <AffiliateRefCaptureShell />
         <PwaShell>{children}</PwaShell>
         <SocialSideRail />
       </body>

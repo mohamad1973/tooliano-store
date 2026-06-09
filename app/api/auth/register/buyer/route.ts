@@ -3,6 +3,7 @@ import { hashPassword } from "@/lib/auth/password";
 import { createSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/prisma";
 import { USER_ROLES } from "@/lib/db/constants";
+import { generateUniqueReferralCode } from "@/lib/affiliate/referral-code";
 
 export async function POST(request: Request) {
   try {
@@ -40,6 +41,7 @@ export async function POST(request: Request) {
     }
 
     const passwordHash = await hashPassword(password);
+    const referralCode = await generateUniqueReferralCode();
     const user = await prisma.user.create({
       data: {
         username,
@@ -47,6 +49,7 @@ export async function POST(request: Request) {
         role: USER_ROLES.BUYER,
         phone,
         email,
+        referralCode,
       },
     });
 

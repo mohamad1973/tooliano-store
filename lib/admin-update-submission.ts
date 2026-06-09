@@ -3,6 +3,7 @@ import "server-only";
 import { prisma } from "@/lib/db/prisma";
 import { updateWooProductFromSubmission } from "@/lib/woo-update-product";
 import { parseSubmissionProductBody } from "@/lib/submission-product-fields";
+import { parseAffiliateCommissionPercent } from "@/lib/affiliate/commission";
 import { toSubmissionUpdateData } from "@/lib/submission-prisma-data";
 import {
   formatValidationIssues,
@@ -32,6 +33,9 @@ export async function adminUpdateSubmissionContent(
   }
 
   const input = parseSubmissionProductBody(body);
+  const affiliatePercent = parseAffiliateCommissionPercent(
+    body.affiliateCommissionPercent,
+  );
   const issues = validateSubmissionForApproval({
     ...submission,
     ...input,
@@ -46,7 +50,12 @@ export async function adminUpdateSubmissionContent(
 
   let updated = await prisma.productSubmission.update({
     where: { id: submissionId },
-    data: toSubmissionUpdateData(input),
+    data: {
+      ...toSubmissionUpdateData(input),
+      ...(affiliatePercent !== undefined
+        ? { affiliateCommissionPercent: affiliatePercent }
+        : {}),
+    },
   });
 
   let wooSynced = false;

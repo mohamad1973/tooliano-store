@@ -26,6 +26,7 @@ type SubmissionData = {
   dealDurationHours: number;
   dealDurationMinutes: number;
   wooProductId: number | null;
+  affiliateCommissionPercent: number;
 };
 
 export function AdminSubmissionEditForm({
@@ -141,6 +142,24 @@ export function AdminSubmissionEditForm({
           }}
           onImageUploadStateChange={setImageUploading}
         />
+
+        <label className="flex flex-col gap-1 text-sm">
+          <span className="font-semibold text-brand-navy">
+            نسبة عمولة الإحالة %
+          </span>
+          <input
+            name="affiliateCommissionPercent"
+            type="number"
+            min={0}
+            max={100}
+            step={0.5}
+            defaultValue={submission.affiliateCommissionPercent}
+            className="max-w-xs rounded-lg border border-brand-gray px-3 py-2"
+          />
+          <span className="text-xs text-brand-navy/60">
+            0 = بدون عمولة. تُحسب من إجمالي طلب المُحال عند تأكيد الحجز.
+          </span>
+        </label>
 
         {submission.wooProductId ? (
           <label className="flex items-center gap-2 text-xs text-brand-navy">

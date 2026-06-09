@@ -6,6 +6,7 @@ import { formatCurrency } from "@/lib/format";
 import { NotificationsPanel } from "@/components/notifications/NotificationsPanel";
 import { NotificationPreferencesForm } from "@/components/notifications/NotificationPreferencesForm";
 import { getBuyerWalletDisplayBalances } from "@/lib/wallet/statement";
+import { AffiliateSharePanel } from "@/components/affiliate/AffiliateSharePanel";
 
 export const metadata = { title: "حسابي" };
 
@@ -39,10 +40,12 @@ export default async function AccountPage() {
             {formatCurrency(balances.spendableBalance)}
           </p>
           <p className="mt-1 text-xs text-brand-navy/50">
-            يظهر بعد تحرير مبلغ (مثلاً فشل حملة)
+            يشمل عمولات الإحالة والمبالغ المحرّرة
           </p>
         </div>
       </section>
+
+      <AffiliateSharePanel />
 
       <p>
         <Link

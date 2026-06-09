@@ -137,6 +137,11 @@ export async function confirmOrderPayment(input: {
       "@/lib/notifications/create-campaign-remaining-notifications"
     );
     await createCampaignRemainingNotifications(order.id);
+
+    const { payAffiliateCommissionForOrder } = await import(
+      "@/lib/affiliate/pay-commission"
+    );
+    await payAffiliateCommissionForOrder(order.id);
   }
 
   return updated;
