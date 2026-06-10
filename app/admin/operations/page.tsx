@@ -11,6 +11,9 @@ import {
   businessTypeLabel,
 } from "@/lib/approval-labels";
 import { prisma } from "@/lib/db/prisma";
+import { CampaignDecisionActions } from "@/components/campaign/CampaignDecisionActions";
+import { CampaignStatusBadge } from "@/components/campaign/CampaignStatusBadge";
+import { awaitingDecisionWhere } from "@/lib/campaign/awaiting-query";
 import { isWordPressMediaUploadConfigured } from "@/lib/wp-media-config";
 
 export const metadata = { title: "عمليات الإدارة" };
@@ -22,7 +25,8 @@ const submissionInclude = {
 export default async function AdminOperationsPage() {
   await requireAdmin();
 
-  const [vendors, activeSubmissions, hiddenCount] = await Promise.all([
+  const [vendors, activeSubmissions, awaitingSubmissions, hiddenCount] =
+    await Promise.all([
     prisma.vendorProfile.findMany({
       include: { user: { select: { username: true, id: true, createdAt: true } } },
       orderBy: { createdAt: "desc" },
@@ -31,6 +35,11 @@ export default async function AdminOperationsPage() {
       where: { adminHidden: false },
       include: submissionInclude,
       orderBy: { createdAt: "desc" },
+    }),
+    prisma.productSubmission.findMany({
+      where: awaitingDecisionWhere(),
+      include: submissionInclude,
+      orderBy: { campaignEndsAt: "asc" },
     }),
     prisma.productSubmission.count({ where: { adminHidden: true } }),
   ]);
@@ -47,6 +56,43 @@ export default async function AdminOperationsPage() {
       subtitle={`${pendingVendors} تاجر قيد المراجعة · ${pendingProducts} منتج قيد المراجعة`}
     >
       <PersistProductImagesPanel wpMediaConfigured={wpMediaConfigured} />
+
+      {awaitingSubmissions.length > 0 ? (
+        <section className="mb-10" id="awaiting-decision">
+          <h2 className="mb-4 text-lg font-bold text-brand-navy">
+            عروض منتهية بانتظار قرار ({awaitingSubmissions.length})
+          </h2>
+          <div className="grid gap-4 lg:grid-cols-2">
+            {awaitingSubmissions.map((item) => (
+              <article
+                key={item.id}
+                className="rounded-2xl border border-amber-300 bg-amber-50/40 p-4"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div>
+                    <h3 className="font-bold text-brand-navy">
+                      {item.productName}
+                    </h3>
+                    <p className="text-xs text-brand-navy/60">
+                      @{item.vendor.username}
+                    </p>
+                  </div>
+                  <CampaignStatusBadge status="AWAITING_DECISION" />
+                </div>
+                <p className="mt-2 text-sm text-brand-navy/80">
+                  محجوز {item.reservedQuantity} / {item.suggestedQuantity}
+                </p>
+                <CampaignDecisionActions
+                  submissionId={item.id}
+                  productName={item.productName}
+                  apiEndpoint={`/api/admin/submissions/${item.id}/campaign-decision`}
+                />
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
       <section className="mb-10">
         <h2 className="mb-4 text-lg font-bold text-brand-navy">
           طلبات التجار ({vendors.length})

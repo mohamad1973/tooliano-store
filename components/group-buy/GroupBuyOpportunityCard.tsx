@@ -3,6 +3,7 @@ import Link from "next/link";
 import { CountdownTimer } from "@/components/landing/CountdownTimer";
 import { LiveCampaignProgress } from "@/components/campaign/LiveCampaignProgress";
 import { LiveRemainingBadge } from "@/components/campaign/LiveRemainingBadge";
+import { CampaignStatusBadge } from "@/components/campaign/CampaignStatusBadge";
 import { getDisplayReservedQuantity } from "@/lib/campaign-display-quantity";
 import { getRemainingQuantity } from "@/lib/campaign-config";
 import { formatCurrency } from "@/lib/format";
@@ -18,6 +19,7 @@ type Props = {
 
 export function GroupBuyOpportunityCard({ opportunity }: Props) {
   const href = `/campaign/offer/${opportunity.id}`;
+  const isActive = opportunity.displayStatus === "ACTIVE";
   const displayReserved = getDisplayReservedQuantity(
     opportunity.targetQuantity,
     opportunity.reservedQuantity,
@@ -51,12 +53,18 @@ export function GroupBuyOpportunityCard({ opportunity }: Props) {
             بدون صورة
           </div>
         )}
-        <div className="absolute end-3 top-3">
-          <LiveRemainingBadge
-            submissionId={opportunity.id}
-            initialRemaining={initialRemaining}
-          />
-        </div>
+        {isActive ? (
+          <div className="absolute end-3 top-3">
+            <LiveRemainingBadge
+              submissionId={opportunity.id}
+              initialRemaining={initialRemaining}
+            />
+          </div>
+        ) : (
+          <div className="absolute inset-x-3 top-3">
+            <CampaignStatusBadge status={opportunity.displayStatus} />
+          </div>
+        )}
         <div className="absolute start-3 top-3 flex flex-col gap-1">
           <span
             className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${productConditionBadgeClass(opportunity.productCondition)}`}
@@ -86,27 +94,35 @@ export function GroupBuyOpportunityCard({ opportunity }: Props) {
         </p>
 
         <div className="mt-4 flex flex-1 flex-col space-y-3">
-          <div>
-            <h4 className="mb-2 text-center text-xs font-bold text-brand-navy">
-              الوقت المتبقي للعرض
-            </h4>
-            <CountdownTimer
-              endsAt={opportunity.campaignEndsAt.toISOString()}
-              compact
-            />
-          </div>
-          <LiveCampaignProgress
-            submissionId={opportunity.id}
-            initial={progressInitial}
-            compact
-          />
+          {isActive ? (
+            <>
+              <div>
+                <h4 className="mb-2 text-center text-xs font-bold text-brand-navy">
+                  الوقت المتبقي للعرض
+                </h4>
+                <CountdownTimer
+                  endsAt={opportunity.campaignEndsAt.toISOString()}
+                  compact
+                />
+              </div>
+              <LiveCampaignProgress
+                submissionId={opportunity.id}
+                initial={progressInitial}
+                compact
+              />
+            </>
+          ) : (
+            <div className="flex flex-1 items-center justify-center rounded-xl bg-brand-gray/30 px-3 py-4 text-center">
+              <CampaignStatusBadge status={opportunity.displayStatus} />
+            </div>
+          )}
         </div>
 
         <Link
           href={href}
           className="mt-4 block rounded-xl bg-brand-gold py-2.5 text-center text-sm font-bold text-brand-navy transition hover:bg-brand-gold/90"
         >
-          شارك في الشراء الجماعي
+          {isActive ? "شارك في الشراء الجماعي" : "عرض التفاصيل"}
         </Link>
       </div>
     </article>

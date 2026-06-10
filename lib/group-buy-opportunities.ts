@@ -2,6 +2,11 @@ import "server-only";
 
 import { prisma } from "@/lib/db/prisma";
 import { APPROVAL_STATUS } from "@/lib/db/constants";
+import {
+  compareCampaignDisplayStatus,
+  resolveCampaignDisplayStatus,
+  type CampaignDisplayStatus,
+} from "@/lib/campaign/status";
 import { resolveSubmissionDisplayImageUrl } from "@/lib/submission-display-image";
 import { fetchProductIdsInCategory } from "@/lib/products";
 import type { Prisma } from "@prisma/client";
@@ -17,6 +22,8 @@ export type GroupBuyOpportunity = {
   reservedQuantity: number;
   boostReservedQuantity: number;
   campaignEndsAt: Date;
+  campaignOutcome: string;
+  displayStatus: CampaignDisplayStatus;
   suggestedRetailPrice: number;
   suggestedGroupPrice: number;
   wooProductId: number | null;
@@ -33,12 +40,15 @@ type SubmissionRow = Prisma.ProductSubmissionGetPayload<{
 async function mapSubmissionRows(
   rows: SubmissionRow[],
 ): Promise<GroupBuyOpportunity[]> {
+  const now = new Date();
   const filtered = rows.filter(
     (r) =>
-      r.suggestedRetailPrice != null && r.suggestedGroupPrice != null,
+      r.suggestedRetailPrice != null &&
+      r.suggestedGroupPrice != null &&
+      r.campaignEndsAt != null,
   );
 
-  return Promise.all(
+  const mapped = await Promise.all(
     filtered.map(async (row) => ({
       id: row.id,
       productName: row.productName,
@@ -54,21 +64,35 @@ async function mapSubmissionRows(
       reservedQuantity: row.reservedQuantity,
       boostReservedQuantity: row.boostReservedQuantity ?? 0,
       campaignEndsAt: row.campaignEndsAt!,
+      campaignOutcome: row.campaignOutcome,
+      displayStatus: resolveCampaignDisplayStatus(
+        row.campaignOutcome,
+        row.campaignEndsAt,
+        now,
+      ),
       suggestedRetailPrice: row.suggestedRetailPrice!,
       suggestedGroupPrice: row.suggestedGroupPrice!,
       wooProductId: row.wooProductId,
     })),
   );
+
+  return mapped.sort((a, b) => {
+    const byStatus = compareCampaignDisplayStatus(
+      a.displayStatus,
+      b.displayStatus,
+    );
+    if (byStatus !== 0) return byStatus;
+    return b.campaignEndsAt.getTime() - a.campaignEndsAt.getTime();
+  });
 }
 
-function activeSubmissionWhere(
+function visibleSubmissionWhere(
   wooProductIds?: number[],
 ): Prisma.ProductSubmissionWhereInput {
-  const now = new Date();
   return {
     status: APPROVAL_STATUS.APPROVED,
     publishedOnStore: true,
-    campaignEndsAt: { gt: now },
+    adminHidden: false,
     ...(wooProductIds?.length
       ? { wooProductId: { in: wooProductIds } }
       : {}),
@@ -79,7 +103,7 @@ export async function fetchActiveGroupBuyOpportunities(): Promise<
   GroupBuyOpportunity[]
 > {
   const rows = await prisma.productSubmission.findMany({
-    where: activeSubmissionWhere(),
+    where: visibleSubmissionWhere(),
     include: submissionInclude,
     orderBy: { reviewedAt: "desc" },
   });
@@ -94,7 +118,7 @@ export async function fetchActiveGroupBuyOpportunitiesForCategory(
   if (productIds.length === 0) return [];
 
   const rows = await prisma.productSubmission.findMany({
-    where: activeSubmissionWhere(productIds),
+    where: visibleSubmissionWhere(productIds),
     include: submissionInclude,
     orderBy: { reviewedAt: "desc" },
   });

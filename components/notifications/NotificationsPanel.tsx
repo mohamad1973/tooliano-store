@@ -13,6 +13,21 @@ type NotificationItem = {
   createdAt: string;
 };
 
+function notificationHref(
+  n: NotificationItem,
+  orderLinkPrefix?: string,
+): string | null {
+  if (
+    n.submissionId &&
+    (n.orderId.startsWith("campaign:") || n.type.startsWith("CAMPAIGN_"))
+  ) {
+    return `/campaign/offer/${n.submissionId}`;
+  }
+  if (orderLinkPrefix) return `${orderLinkPrefix}/${n.orderId}`;
+  if (n.submissionId) return `/campaign/offer/${n.submissionId}`;
+  return null;
+}
+
 function formatWhen(iso: string) {
   try {
     return new Intl.DateTimeFormat("ar-EG", {
@@ -131,9 +146,7 @@ export function NotificationsPanel({
         <ul className="space-y-2">
           {items.map((n) => {
             const unread = !n.readAt;
-            const orderHref = orderLinkPrefix
-              ? `${orderLinkPrefix}/${n.orderId}`
-              : null;
+            const orderHref = notificationHref(n, orderLinkPrefix);
 
             return (
               <li
@@ -164,7 +177,9 @@ export function NotificationsPanel({
                     href={orderHref}
                     className="mt-2 inline-block text-xs font-semibold text-brand-gold hover:underline"
                   >
-                    عرض الطلب ←
+                    {n.orderId.startsWith("campaign:") || n.type.startsWith("CAMPAIGN_")
+                      ? "عرض العرض ←"
+                      : "عرض الطلب ←"}
                   </a>
                 ) : null}
               </li>

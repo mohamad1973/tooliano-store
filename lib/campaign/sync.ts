@@ -4,19 +4,26 @@ import { prisma } from "@/lib/db/prisma";
 import {
   APPROVAL_STATUS,
   CAMPAIGN_OUTCOME,
+  NOTIFICATION_TYPES,
   ORDER_STATUS,
 } from "@/lib/db/constants";
 import { issueDeliveryCodeForOrder } from "@/lib/campaign/issue-codes";
 import { unlockOrderDeposit } from "@/lib/wallet/ledger";
 import { reverseAffiliateCommissionForOrder } from "@/lib/affiliate/reverse-commission";
+import { createCampaignStatusNotifications } from "@/lib/notifications/create-campaign-status-notifications";
+
+const DECISION_ELIGIBLE_OUTCOMES = new Set<string>([
+  CAMPAIGN_OUTCOME.ACTIVE,
+  CAMPAIGN_OUTCOME.AWAITING_DECISION,
+]);
 
 export async function syncCampaigns(): Promise<{
   succeeded: number;
-  failed: number;
+  awaiting: number;
 }> {
   const now = new Date();
   let succeeded = 0;
-  let failed = 0;
+  let awaiting = 0;
 
   const ended = await prisma.productSubmission.findMany({
     where: {
@@ -32,17 +39,46 @@ export async function syncCampaigns(): Promise<{
     const met = sub.reservedQuantity >= target;
     if (met) {
       await succeedCampaign(sub.id);
+      await createCampaignStatusNotifications(
+        sub.id,
+        NOTIFICATION_TYPES.CAMPAIGN_EXECUTED,
+        { orderIdSuffix: `auto:${Date.now()}` },
+      );
       succeeded++;
     } else {
-      await failCampaign(sub.id);
-      failed++;
+      await markCampaignAwaitingDecision(sub.id);
+      awaiting++;
     }
   }
 
-  return { succeeded, failed };
+  return { succeeded, awaiting };
 }
 
-export async function tryEarlyCampaignSuccess(submissionId: string): Promise<boolean> {
+export async function markCampaignAwaitingDecision(
+  submissionId: string,
+  options?: { notify?: boolean },
+): Promise<void> {
+  const sub = await prisma.productSubmission.findUnique({
+    where: { id: submissionId },
+  });
+  if (!sub || sub.campaignOutcome !== CAMPAIGN_OUTCOME.ACTIVE) return;
+
+  await prisma.productSubmission.update({
+    where: { id: submissionId },
+    data: { campaignOutcome: CAMPAIGN_OUTCOME.AWAITING_DECISION },
+  });
+
+  if (options?.notify !== false) {
+    await createCampaignStatusNotifications(
+      submissionId,
+      NOTIFICATION_TYPES.CAMPAIGN_EXPIRED,
+    );
+  }
+}
+
+export async function tryEarlyCampaignSuccess(
+  submissionId: string,
+): Promise<boolean> {
   const sub = await prisma.productSubmission.findUnique({
     where: { id: submissionId },
   });
@@ -56,7 +92,7 @@ export async function succeedCampaign(submissionId: string) {
   const sub = await prisma.productSubmission.findUnique({
     where: { id: submissionId },
   });
-  if (!sub || sub.campaignOutcome !== CAMPAIGN_OUTCOME.ACTIVE) return;
+  if (!sub || !DECISION_ELIGIBLE_OUTCOMES.has(sub.campaignOutcome)) return;
 
   const orders = await prisma.groupBuyOrder.findMany({
     where: {
@@ -78,6 +114,11 @@ export async function succeedCampaign(submissionId: string) {
 }
 
 export async function failCampaign(submissionId: string) {
+  const sub = await prisma.productSubmission.findUnique({
+    where: { id: submissionId },
+  });
+  if (!sub || !DECISION_ELIGIBLE_OUTCOMES.has(sub.campaignOutcome)) return;
+
   const orders = await prisma.groupBuyOrder.findMany({
     where: {
       submissionId,

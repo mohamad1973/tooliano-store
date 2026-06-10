@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { buildCampaignProgress } from "@/lib/campaign/progress";
-import { APPROVAL_STATUS, CAMPAIGN_OUTCOME } from "@/lib/db/constants";
+import {
+  canReserveCampaign,
+  resolveCampaignDisplayStatus,
+} from "@/lib/campaign/status";
+import { APPROVAL_STATUS } from "@/lib/db/constants";
 
 type Params = { params: Promise<{ submissionId: string }> };
 
@@ -14,7 +18,6 @@ export async function GET(_request: Request, { params }: Params) {
       status: APPROVAL_STATUS.APPROVED,
       publishedOnStore: true,
       adminHidden: false,
-      campaignOutcome: CAMPAIGN_OUTCOME.ACTIVE,
     },
     select: {
       id: true,
@@ -22,12 +25,20 @@ export async function GET(_request: Request, { params }: Params) {
       suggestedQuantity: true,
       reservedQuantity: true,
       boostReservedQuantity: true,
+      campaignOutcome: true,
+      campaignEndsAt: true,
+      adminHidden: true,
     },
   });
 
-  if (!submission) {
+  if (!submission || !submission.campaignEndsAt) {
     return NextResponse.json({ error: "الحملة غير موجودة" }, { status: 404 });
   }
+
+  const displayStatus = resolveCampaignDisplayStatus(
+    submission.campaignOutcome,
+    submission.campaignEndsAt,
+  );
 
   const progress = buildCampaignProgress({
     submissionId: submission.id,
@@ -37,5 +48,13 @@ export async function GET(_request: Request, { params }: Params) {
     boostReservedQuantity: submission.boostReservedQuantity,
   });
 
-  return NextResponse.json(progress);
+  return NextResponse.json({
+    ...progress,
+    displayStatus,
+    canReserve: canReserveCampaign({
+      campaignOutcome: submission.campaignOutcome,
+      campaignEndsAt: submission.campaignEndsAt,
+      adminHidden: submission.adminHidden,
+    }),
+  });
 }

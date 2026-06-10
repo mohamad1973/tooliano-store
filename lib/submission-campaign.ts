@@ -3,6 +3,11 @@ import "server-only";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db/prisma";
 import { APPROVAL_STATUS } from "@/lib/db/constants";
+import {
+  canReserveCampaign,
+  resolveCampaignDisplayStatus,
+  type CampaignDisplayStatus,
+} from "@/lib/campaign/status";
 import { resolveSubmissionDisplayImageUrl } from "@/lib/submission-display-image";
 import type { ProductImage } from "@/types/product";
 
@@ -26,6 +31,9 @@ export type SubmissionCampaignView = {
   reservedQuantity: number;
   boostReservedQuantity: number;
   campaignEndsAt: string;
+  campaignOutcome: string;
+  displayStatus: CampaignDisplayStatus;
+  canReserve: boolean;
   retailPrice: number;
   groupPrice: number;
   wooProductId: number | null;
@@ -43,10 +51,16 @@ export async function fetchSubmissionCampaignById(
 
   if (!row || row.status !== APPROVAL_STATUS.APPROVED) return null;
   if (!row.publishedOnStore) return null;
+  if (row.adminHidden) return null;
   if (!row.campaignEndsAt) return null;
   if (row.suggestedRetailPrice == null || row.suggestedGroupPrice == null) {
     return null;
   }
+
+  const displayStatus = resolveCampaignDisplayStatus(
+    row.campaignOutcome,
+    row.campaignEndsAt,
+  );
 
   const imageSrc = await resolveSubmissionDisplayImageUrl(
     row.productImageUrl,
@@ -77,6 +91,13 @@ export async function fetchSubmissionCampaignById(
     reservedQuantity: row.reservedQuantity,
     boostReservedQuantity: row.boostReservedQuantity ?? 0,
     campaignEndsAt: row.campaignEndsAt.toISOString(),
+    campaignOutcome: row.campaignOutcome,
+    displayStatus,
+    canReserve: canReserveCampaign({
+      campaignOutcome: row.campaignOutcome,
+      campaignEndsAt: row.campaignEndsAt,
+      adminHidden: row.adminHidden,
+    }),
     retailPrice: row.suggestedRetailPrice,
     groupPrice: row.suggestedGroupPrice,
     wooProductId: row.wooProductId,
@@ -91,6 +112,7 @@ export async function fetchSubmissionCampaignByWooProductId(
       wooProductId,
       status: APPROVAL_STATUS.APPROVED,
       publishedOnStore: true,
+      adminHidden: false,
     },
     orderBy: { updatedAt: "desc" },
     select: { id: true },

@@ -10,6 +10,11 @@ import {
   previewAfterPayment,
   validatePaymentAmountClient,
 } from "@/lib/orders/payment-amount-ui";
+import { CampaignStatusBadge } from "@/components/campaign/CampaignStatusBadge";
+import {
+  campaignStatusLabel,
+  type CampaignDisplayStatus,
+} from "@/lib/campaign/status";
 
 type Props = {
   submissionId: string;
@@ -17,6 +22,8 @@ type Props = {
   productName: string;
   isLoggedIn: boolean;
   isBuyer: boolean;
+  canReserve: boolean;
+  displayStatus: CampaignDisplayStatus;
 };
 
 export function ReserveSection({
@@ -25,6 +32,8 @@ export function ReserveSection({
   productName,
   isLoggedIn,
   isBuyer,
+  canReserve,
+  displayStatus,
 }: Props) {
   const router = useRouter();
   const [qty, setQty] = useState(1);
@@ -132,6 +141,25 @@ export function ReserveSection({
     } finally {
       setLoading(false);
     }
+  }
+
+  if (!canReserve) {
+    return (
+      <section
+        className="scroll-mt-24 rounded-2xl border-2 border-amber-300 bg-amber-50 p-6 shadow-lg sm:p-8"
+        id="reserve"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-xl font-bold text-brand-navy">حالة العرض</h2>
+          <CampaignStatusBadge status={displayStatus} />
+        </div>
+        <p className="mt-4 text-sm leading-relaxed text-amber-950">
+          {displayStatus === "AWAITING_DECISION"
+            ? "انتهت مدة العرض — في انتظار تمديد المدة من البائع. لا يمكن الحجز حالياً."
+            : campaignStatusLabel(displayStatus)}
+        </p>
+      </section>
+    );
   }
 
   return (

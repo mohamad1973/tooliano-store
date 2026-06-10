@@ -1,6 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/db/prisma";
+import { awaitingDecisionWhere } from "@/lib/campaign/awaiting-query";
 import { APPROVAL_STATUS, ORDER_STATUS, USER_ROLES } from "@/lib/db/constants";
 
 export async function getAdminOverviewStats() {
@@ -11,6 +12,7 @@ export async function getAdminOverviewStats() {
     agentCount,
     pendingVendors,
     pendingProducts,
+    awaitingDecisionProducts,
     paidOrders,
     platformTotal,
     onlinePaidSum,
@@ -22,6 +24,9 @@ export async function getAdminOverviewStats() {
     prisma.vendorProfile.count({ where: { status: APPROVAL_STATUS.PENDING } }),
     prisma.productSubmission.count({
       where: { status: APPROVAL_STATUS.PENDING },
+    }),
+    prisma.productSubmission.count({
+      where: awaitingDecisionWhere(),
     }),
     prisma.groupBuyOrder.count({
       where: {
@@ -41,6 +46,7 @@ export async function getAdminOverviewStats() {
     agentCount,
     pendingVendors,
     pendingProducts,
+    awaitingDecisionProducts,
     paidOrders,
     platformSettled: platformTotal._sum.amount ?? 0,
     totalPaidOnline: onlinePaidSum._sum.paidOnlineTotal ?? 0,

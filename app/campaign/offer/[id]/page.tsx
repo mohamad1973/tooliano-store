@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteHeader } from "@/components/SiteHeader";
 import { CampaignLandingBlocks } from "@/components/landing/CampaignLandingBlocks";
+import { CampaignStatusBadge } from "@/components/campaign/CampaignStatusBadge";
 import { CountdownTimer } from "@/components/landing/CountdownTimer";
 import { PriceComparison } from "@/components/landing/PriceComparison";
 import { ProductGallery } from "@/components/landing/ProductGallery";
@@ -61,7 +62,9 @@ export default async function OfferCampaignPage({ params }: Props) {
   return (
     <>
       <SiteHeader />
-      <StickyReserveBar groupPriceLabel={formatCurrency(campaign.groupPrice)} />
+      {campaign.canReserve ? (
+        <StickyReserveBar groupPriceLabel={formatCurrency(campaign.groupPrice)} />
+      ) : null}
 
       <section className="bg-brand-navy py-10 text-brand-white sm:py-14">
         <div className="mx-auto max-w-6xl px-4">
@@ -84,25 +87,41 @@ export default async function OfferCampaignPage({ params }: Props) {
           <p className="mt-2 text-center text-base font-semibold text-brand-gold">
             {campaign.vendorCompanyName}
           </p>
-          <div className="mt-8 flex justify-center">
-            <a
-              href="#reserve"
-              className="rounded-xl bg-brand-gold px-8 py-3.5 text-base font-bold text-brand-navy transition hover:bg-brand-gold/90"
-            >
-              احجز قطعتك الآن
-            </a>
+          <div className="mt-6 flex flex-col items-center gap-3">
+            <CampaignStatusBadge status={campaign.displayStatus} />
+            {campaign.canReserve ? (
+              <a
+                href="#reserve"
+                className="rounded-xl bg-brand-gold px-8 py-3.5 text-base font-bold text-brand-navy transition hover:bg-brand-gold/90"
+              >
+                احجز قطعتك الآن
+              </a>
+            ) : (
+              <p className="max-w-xl text-center text-sm text-brand-white/90">
+                {campaign.displayStatus === "AWAITING_DECISION"
+                  ? "انتهت مدة العرض — في انتظار تمديد المدة من البائع"
+                  : null}
+              </p>
+            )}
           </div>
         </div>
       </section>
 
       <section className="border-b border-brand-gray bg-brand-white py-8">
         <div className="mx-auto grid max-w-6xl gap-8 px-4 lg:grid-cols-2">
-          <div>
-            <h3 className="mb-4 text-center text-sm font-bold text-brand-navy">
-              الوقت المتبقي للعرض
-            </h3>
-            <CountdownTimer endsAt={campaign.campaignEndsAt} />
-          </div>
+          {campaign.canReserve ? (
+            <div>
+              <h3 className="mb-4 text-center text-sm font-bold text-brand-navy">
+                الوقت المتبقي للعرض
+              </h3>
+              <CountdownTimer endsAt={campaign.campaignEndsAt} />
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center gap-3 rounded-2xl bg-brand-gray/20 p-6">
+              <h3 className="text-sm font-bold text-brand-navy">حالة العرض</h3>
+              <CampaignStatusBadge status={campaign.displayStatus} />
+            </div>
+          )}
           <LiveCampaignProgress
             submissionId={campaign.id}
             initial={progressInitial}
@@ -130,6 +149,8 @@ export default async function OfferCampaignPage({ params }: Props) {
               productName={campaign.productName}
               isLoggedIn={isLoggedIn}
               isBuyer={isBuyer}
+              canReserve={campaign.canReserve}
+              displayStatus={campaign.displayStatus}
             />
           </div>
         </div>
