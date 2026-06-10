@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AdminCmsMessage } from "@/components/admin/cms/AdminCmsMessage";
 
+const ACCEPT = "image/jpeg,image/png,image/webp";
+
 type Item = {
   id: string;
   imageUrl: string;
@@ -13,11 +15,29 @@ type Item = {
   enabled: boolean;
 };
 
+async function extractError(res: Response, fallback: string): Promise<string> {
+  let serverError: string | null = null;
+  try {
+    const data = (await res.json()) as { error?: string };
+    if (data?.error) serverError = data.error;
+  } catch {
+    // الرد ليس JSON
+  }
+  if (res.status === 401) {
+    return "انتهت جلسة الدخول — سجّل الدخول من جديد ثم أعد المحاولة";
+  }
+  if (res.status === 403) {
+    return serverError ?? "غير مصرح — هذا الحساب ليس أدمن";
+  }
+  return serverError ?? `${fallback} (رمز الخطأ ${res.status})`;
+}
+
 export function BannersEditor({ initial }: { initial: Item[] }) {
   const router = useRouter();
   const [items, setItems] = useState(initial);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [uploadingFor, setUploadingFor] = useState<string | null>(null);
   const [newBanner, setNewBanner] = useState({
     imageUrl: "/banners/tools.jpg",
     categorySlug: "",
@@ -31,33 +51,102 @@ export function BannersEditor({ initial }: { initial: Item[] }) {
     if (res.ok) setItems(data.items);
   }
 
+  async function uploadImage(file: File): Promise<string | null> {
+    setError(null);
+    setMessage(null);
+    const body = new FormData();
+    body.append("image", file);
+    try {
+      const res = await fetch("/api/upload", { method: "POST", body });
+      if (!res.ok) {
+        setError(await extractError(res, "فشل رفع الصورة"));
+        return null;
+      }
+      const data = (await res.json()) as { url?: string };
+      if (!data.url) {
+        setError("فشل رفع الصورة — لم يرجع الخادم رابطاً");
+        return null;
+      }
+      return data.url;
+    } catch {
+      setError("تعذّر الاتصال بالخادم أثناء رفع الصورة");
+      return null;
+    }
+  }
+
   async function saveItem(item: Item) {
-    const res = await fetch(`/api/admin/cms/banners/${item.id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        imageUrl: item.imageUrl,
-        categorySlug: item.categorySlug || null,
-        title: item.title || null,
-        enabled: item.enabled,
-      }),
-    });
-    if (!res.ok) setError("فشل الحفظ");
+    setError(null);
+    setMessage(null);
+    let res: Response;
+    try {
+      res = await fetch(`/api/admin/cms/banners/${item.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          imageUrl: item.imageUrl,
+          categorySlug: item.categorySlug || null,
+          title: item.title || null,
+          enabled: item.enabled,
+        }),
+      });
+    } catch {
+      setError("تعذّر الاتصال بالخادم — تحقق من الإنترنت ثم أعد المحاولة");
+      return;
+    }
+    if (!res.ok) setError(await extractError(res, "فشل الحفظ"));
     else {
       setMessage("تم الحفظ");
       await refresh();
     }
   }
 
+  async function onItemFileChange(
+    item: Item,
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setUploadingFor(item.id);
+    const url = await uploadImage(file);
+    setUploadingFor(null);
+    if (!url) return;
+    setItems((prev) =>
+      prev.map((i) => (i.id === item.id ? { ...i, imageUrl: url } : i)),
+    );
+    await saveItem({ ...item, imageUrl: url });
+  }
+
+  async function onNewBannerFileChange(
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setUploadingFor("new");
+    const url = await uploadImage(file);
+    setUploadingFor(null);
+    if (!url) return;
+    setNewBanner((b) => ({ ...b, imageUrl: url }));
+    setMessage("تم رفع الصورة — اضغط «إضافة بنر» لحفظ البنر الجديد");
+  }
+
   async function addBanner() {
-    const res = await fetch("/api/admin/cms/banners", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newBanner),
-    });
+    setError(null);
+    setMessage(null);
+    let res: Response;
+    try {
+      res = await fetch("/api/admin/cms/banners", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newBanner),
+      });
+    } catch {
+      setError("تعذّر الاتصال بالخادم — تحقق من الإنترنت ثم أعد المحاولة");
+      return;
+    }
     if (!res.ok) {
-      const data = await res.json();
-      setError(data.error ?? "فشل الإضافة");
+      setError(await extractError(res, "فشل الإضافة"));
       return;
     }
     setMessage("تمت الإضافة");
@@ -66,7 +155,15 @@ export function BannersEditor({ initial }: { initial: Item[] }) {
 
   async function deleteBanner(id: string) {
     if (!confirm("حذف البنر؟")) return;
-    await fetch(`/api/admin/cms/banners/${id}`, { method: "DELETE" });
+    setError(null);
+    setMessage(null);
+    const res = await fetch(`/api/admin/cms/banners/${id}`, {
+      method: "DELETE",
+    });
+    if (!res.ok) {
+      setError(await extractError(res, "فشل الحذف"));
+      return;
+    }
     await refresh();
   }
 
@@ -78,6 +175,33 @@ export function BannersEditor({ initial }: { initial: Item[] }) {
           key={item.id}
           className="grid gap-3 rounded-xl border border-brand-gray bg-brand-white p-4 sm:grid-cols-2"
         >
+          <div className="sm:col-span-2 flex flex-wrap items-center gap-3">
+            {item.imageUrl ? (
+              <div className="h-16 w-28 overflow-hidden rounded-lg border border-brand-gray bg-brand-gray/20">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={item.imageUrl}
+                  alt={item.title ?? "معاينة البنر"}
+                  className="h-full w-full object-cover"
+                />
+              </div>
+            ) : null}
+            <label className="cursor-pointer rounded-lg bg-brand-navy px-3 py-2 text-xs font-bold text-brand-white">
+              {uploadingFor === item.id
+                ? "جاري رفع الصورة…"
+                : "رفع صورة من الجهاز"}
+              <input
+                type="file"
+                accept={ACCEPT}
+                disabled={uploadingFor !== null}
+                onChange={(e) => onItemFileChange(item, e)}
+                className="hidden"
+              />
+            </label>
+            <span className="text-xs text-brand-navy/60">
+              JPG / PNG / WebP — تُحفَظ تلقائياً بعد الرفع
+            </span>
+          </div>
           <label className="text-sm">
             رابط الصورة
             <input
@@ -160,6 +284,21 @@ export function BannersEditor({ initial }: { initial: Item[] }) {
       ))}
       <div className="rounded-xl border border-dashed border-brand-gold p-4">
         <p className="mb-2 text-sm font-bold text-brand-navy">بنر جديد</p>
+        <div className="mb-2 flex flex-wrap items-center gap-3">
+          <label className="cursor-pointer rounded-lg bg-brand-navy px-3 py-2 text-xs font-bold text-brand-white">
+            {uploadingFor === "new" ? "جاري رفع الصورة…" : "رفع صورة من الجهاز"}
+            <input
+              type="file"
+              accept={ACCEPT}
+              disabled={uploadingFor !== null}
+              onChange={onNewBannerFileChange}
+              className="hidden"
+            />
+          </label>
+          <span className="text-xs text-brand-navy/60">
+            أو ألصق رابط الصورة في الحقل أدناه
+          </span>
+        </div>
         <div className="grid gap-2 sm:grid-cols-3">
           <input
             value={newBanner.imageUrl}
