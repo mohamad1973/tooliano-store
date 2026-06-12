@@ -30,11 +30,6 @@ export default async function AdminOverviewPage() {
       value: stats.pendingProducts,
       href: "/admin/operations",
     },
-    {
-      label: "عروض بانتظار قرار",
-      value: stats.awaitingDecisionProducts,
-      href: "/admin/operations#awaiting-decision",
-    },
     { label: "طلبات مدفوعة", value: stats.paidOrders, href: "/admin/payments" },
   ];
 

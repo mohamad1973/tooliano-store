@@ -9,6 +9,7 @@ import {
 } from "@/lib/campaign/status";
 import { resolveSubmissionDisplayImageUrl } from "@/lib/submission-display-image";
 import { fetchProductIdsInCategory } from "@/lib/products";
+import { processExpiredCampaigns } from "@/lib/campaign/auto-extend";
 import type { Prisma } from "@prisma/client";
 
 export type GroupBuyOpportunity = {
@@ -102,6 +103,8 @@ function visibleSubmissionWhere(
 export async function fetchActiveGroupBuyOpportunities(): Promise<
   GroupBuyOpportunity[]
 > {
+  await processExpiredCampaigns({ notify: false });
+
   const rows = await prisma.productSubmission.findMany({
     where: visibleSubmissionWhere(),
     include: submissionInclude,
@@ -114,6 +117,8 @@ export async function fetchActiveGroupBuyOpportunities(): Promise<
 export async function fetchActiveGroupBuyOpportunitiesForCategory(
   categoryId: number,
 ): Promise<GroupBuyOpportunity[]> {
+  await processExpiredCampaigns({ notify: false });
+
   const productIds = await fetchProductIdsInCategory(categoryId);
   if (productIds.length === 0) return [];
 

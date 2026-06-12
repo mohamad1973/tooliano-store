@@ -17,10 +17,9 @@ import {
 import { prisma } from "@/lib/db/prisma";
 import { getVendorOrderSummaries } from "@/lib/vendor/submission-orders";
 import { orderStatusLabel } from "@/lib/orders/labels";
-import { CampaignDecisionActions } from "@/components/campaign/CampaignDecisionActions";
-import { CampaignStatusBadge } from "@/components/campaign/CampaignStatusBadge";
 import { NotificationsPanel } from "@/components/notifications/NotificationsPanel";
-import { isAwaitingCampaignDecision } from "@/lib/campaign/status";
+import { CampaignStatusBadge } from "@/components/campaign/CampaignStatusBadge";
+import { resolveCampaignDisplayStatus } from "@/lib/campaign/status";
 
 export const metadata = {
   title: "لوحة البائع",
@@ -140,23 +139,15 @@ export default async function VendorDashboardPage() {
                   <>
                     <div className="mt-2 flex flex-wrap items-center gap-2">
                       <CampaignStatusBadge
-                        status={
-                          isAwaitingCampaignDecision(
-                            item.campaignOutcome,
-                            item.campaignEndsAt,
-                          )
-                            ? "AWAITING_DECISION"
-                            : item.campaignOutcome === "SUCCEEDED"
-                              ? "SUCCEEDED"
-                              : item.campaignOutcome === "FAILED"
-                                ? "FAILED"
-                                : "ACTIVE"
-                        }
+                        status={resolveCampaignDisplayStatus(
+                          item.campaignOutcome,
+                          item.campaignEndsAt,
+                        )}
                       />
                     </div>
                     <p className="mt-2 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-900">
-                      تمت الموافقة على هذا المنتج — لا يمكنك تعديل التفاصيل أو
-                      الصور. للتغيير تواصل مع الإدارة.
+                      تمت الموافقة على هذا المنتج — يبقى ظاهراً على الموقع ويُمدَّد
+                      تلقائياً يوماً عند انتهاء المدة. للتغيير تواصل مع الإدارة.
                     </p>
                     <Link
                       href={`/campaign/offer/${item.id}`}
@@ -164,16 +155,6 @@ export default async function VendorDashboardPage() {
                     >
                       عرض الصفحة العامة للحملة ←
                     </Link>
-                    {isAwaitingCampaignDecision(
-                      item.campaignOutcome,
-                      item.campaignEndsAt,
-                    ) ? (
-                      <CampaignDecisionActions
-                        submissionId={item.id}
-                        productName={item.productName}
-                        apiEndpoint={`/api/vendor/submissions/${item.id}/campaign-decision`}
-                      />
-                    ) : null}
                   </>
                 ) : null}
                 <p className="mt-2 text-sm text-brand-navy/80 line-clamp-3">

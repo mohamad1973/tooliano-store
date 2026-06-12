@@ -50,8 +50,8 @@ export function AdminHideSubmissionButton({
         {loading
           ? "جاري التنفيذ…"
           : hidden
-            ? "إظهار في القائمة"
-            : "إخفاء المنتج"}
+            ? "إظهار على واجهة الموقع"
+            : "إخفاء من واجهة الموقع"}
       </button>
       {error ? <p className="mt-1 text-xs text-red-600">{error}</p> : null}
     </div>

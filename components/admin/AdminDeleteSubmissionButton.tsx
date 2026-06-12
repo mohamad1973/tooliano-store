@@ -15,7 +15,7 @@ export function AdminDeleteSubmissionButton({
   async function deleteForever() {
     if (
       !window.confirm(
-        "مسح هذا المنتج نهائياً؟ لن يظهر في أي قائمة (نشطة أو مخفية) ولا يمكن التراجع.",
+        "حذف هذا المنتج من لوحة الإدارة؟ لن يظهر في الداشبورد (نشط أو مخفي). يمكنك إخفاؤه من واجهة الموقع أولاً إن أردت.",
       )
     ) {
       return;
@@ -48,7 +48,7 @@ export function AdminDeleteSubmissionButton({
         onClick={deleteForever}
         className="rounded-lg border border-red-300 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100 disabled:opacity-60"
       >
-        {loading ? "جاري المسح…" : "مسح نهائياً"}
+        {loading ? "جاري الحذف…" : "حذف من لوحة الإدارة"}
       </button>
       {error ? <p className="mt-1 text-xs text-red-600">{error}</p> : null}
     </div>

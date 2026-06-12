@@ -9,6 +9,7 @@ import {
   type CampaignDisplayStatus,
 } from "@/lib/campaign/status";
 import { resolveSubmissionDisplayImageUrl } from "@/lib/submission-display-image";
+import { ensureSubmissionCampaignExtended } from "@/lib/campaign/auto-extend";
 import type { ProductImage } from "@/types/product";
 
 export type SubmissionCampaignView = {
@@ -42,6 +43,8 @@ export type SubmissionCampaignView = {
 export async function fetchSubmissionCampaignById(
   id: string,
 ): Promise<SubmissionCampaignView | null> {
+  await ensureSubmissionCampaignExtended(id);
+
   const row = await prisma.productSubmission.findUnique({
     where: { id },
     include: {
