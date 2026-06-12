@@ -160,6 +160,7 @@ export async function failCampaign(submissionId: string) {
     data: {
       campaignOutcome: CAMPAIGN_OUTCOME.FAILED,
       reservedQuantity: 0,
+      // لا نغيّر publishedOnStore — المنتج يبقى ظاهراً حتى يخفيه الأدمن
     },
   });
 }

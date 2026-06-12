@@ -18,6 +18,7 @@
     "migrate:vendor-images": "dotenv -e .env.local -- npx tsx scripts/migrate-vendor-images-to-wp.ts",
     "verify:db": "dotenv -e .env.local -- npx tsx scripts/verify-db.ts",
     "verify:neon-db": "npm run verify:db",
+    "repair:approved-visibility": "dotenv -e .env.local -- npx tsx scripts/repair-approved-visibility.ts",
     "extend:campaigns": "dotenv -e .env.local -- npx tsx scripts/extend-expired-campaigns.ts",
     "jobs:sync-campaigns": "dotenv -e .env.local -- npx tsx scripts/jobs/sync-campaigns.ts",
     "env:sync-db-url": "npx tsx scripts/sync-database-url.ts",

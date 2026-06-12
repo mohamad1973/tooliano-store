@@ -43,11 +43,8 @@ export async function GroupBuyOpportunitiesSection() {
             </h2>
 
             <p className="mt-2 max-w-xl text-sm text-brand-navy/70">
-
-              عروض محدودة بوقت وكمية — اسم التاجر وعدادات الحملة. التفاصيل الكاملة
-
-              عند الدخول لصفحة المنتج.
-
+              جميع العروض المعتمدة من الإدارة — النشطة والمنتهية — تبقى ظاهرة
+              بشارة حالة. التفاصيل الكاملة عند الدخول لصفحة المنتج.
             </p>
 
           </div>
@@ -59,11 +56,8 @@ export async function GroupBuyOpportunitiesSection() {
         {opportunities.length === 0 ? (
 
           <p className="rounded-2xl border border-dashed border-brand-gray bg-brand-white px-6 py-10 text-center text-sm text-brand-navy/60">
-
-            لا توجد فرص نشطة حالياً. بعد موافقة الإدارة على منتج تاجر يظهر هنا
-
-            تلقائياً.
-
+            لا توجد عروض معتمدة حالياً. بعد موافقة الإدارة على منتج تاجر يظهر
+            هنا تلقائياً ويبقى ظاهراً حتى بعد انتهاء مدة العرض.
           </p>
 
         ) : (

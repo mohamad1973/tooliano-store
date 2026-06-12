@@ -34,7 +34,7 @@ export async function GroupBuyOpportunitiesForCategory({
           فرص الشراء الجماعي — {categoryName}
         </h2>
         <p className="mt-1 text-sm text-brand-navy/70">
-          عروض نشطة مرتبطة بمنتجات هذا القسم.
+          عروض معتمدة مرتبطة بمنتجات هذا القسم — تشمل المنتهية والمنفّذة.
         </p>
       </div>
       <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
