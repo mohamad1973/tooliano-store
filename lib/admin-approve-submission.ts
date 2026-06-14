@@ -3,6 +3,7 @@ import "server-only";
 import { prisma } from "@/lib/db/prisma";
 import {
   APPROVAL_STATUS,
+  CAMPAIGN_OUTCOME,
   DEFAULT_CAMPAIGN_DAYS,
 } from "@/lib/db/constants";
 import {
@@ -78,6 +79,7 @@ export async function approveProductSubmission(
     data: {
       status: APPROVAL_STATUS.APPROVED,
       publishedOnStore: true,
+      campaignOutcome: CAMPAIGN_OUTCOME.ACTIVE,
       adminNote,
       reviewedAt: new Date(),
       campaignEndsAt,

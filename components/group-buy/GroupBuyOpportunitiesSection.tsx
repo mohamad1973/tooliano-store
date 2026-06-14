@@ -19,9 +19,7 @@ export async function GroupBuyOpportunitiesSection() {
   try {
     opportunities = await fetchActiveGroupBuyOpportunities();
   } catch (err) {
-    if (process.env.NODE_ENV === "development") {
-      console.error("[GroupBuyOpportunitiesSection]", err);
-    }
+    console.error("[GroupBuyOpportunitiesSection]", err);
   }
 
 

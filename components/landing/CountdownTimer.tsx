@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 
 type Props = {
   endsAt: string;
   compact?: boolean;
+  /** عند انتهاء العداد: تحديث الصفحة لتمديد العرض تلقائياً على السيرفر */
+  refreshOnExpiry?: boolean;
 };
 
 type Remaining = {
@@ -66,15 +69,42 @@ function Unit({
   );
 }
 
-export function CountdownTimer({ endsAt, compact = false }: Props) {
+export function CountdownTimer({
+  endsAt,
+  compact = false,
+  refreshOnExpiry = true,
+}: Props) {
+  const router = useRouter();
+  const refreshed = useRef(false);
   const [remaining, setRemaining] = useState<Remaining>(() =>
     calcRemaining(endsAt),
   );
 
   useEffect(() => {
-    const id = setInterval(() => setRemaining(calcRemaining(endsAt)), 1000);
-    return () => clearInterval(id);
+    refreshed.current = false;
   }, [endsAt]);
+
+  useEffect(() => {
+    function maybeRefresh(next: Remaining) {
+      if (
+        refreshOnExpiry &&
+        next.expired &&
+        !refreshed.current
+      ) {
+        refreshed.current = true;
+        router.refresh();
+      }
+    }
+
+    maybeRefresh(calcRemaining(endsAt));
+
+    const id = setInterval(() => {
+      const next = calcRemaining(endsAt);
+      setRemaining(next);
+      maybeRefresh(next);
+    }, 1000);
+    return () => clearInterval(id);
+  }, [endsAt, refreshOnExpiry, router]);
 
   if (remaining.expired) {
     return (
@@ -85,7 +115,7 @@ export function CountdownTimer({ endsAt, compact = false }: Props) {
             : "text-center text-sm font-semibold text-brand-navy/70"
         }
       >
-        انتهت فترة العرض
+        جاري تمديد العرض…
       </p>
     );
   }

@@ -7,6 +7,7 @@ import {
   NOTIFICATION_TYPES,
 } from "@/lib/db/constants";
 import { succeedCampaign } from "@/lib/campaign/campaign-outcome";
+import { repairApprovedStoreVisibility } from "@/lib/campaign/ensure-visibility";
 import { createCampaignStatusNotifications } from "@/lib/notifications/create-campaign-status-notifications";
 
 const AUTO_EXTEND_DAYS = 1;
@@ -16,12 +17,10 @@ const EXPIRED_OUTCOMES = [
   CAMPAIGN_OUTCOME.AWAITING_DECISION,
 ] as const;
 
-function expiredVisibleWhere(now: Date, submissionId?: string) {
+function expiredSubmissionWhere(now: Date, submissionId?: string) {
   return {
     ...(submissionId ? { id: submissionId } : {}),
     status: APPROVAL_STATUS.APPROVED,
-    publishedOnStore: true,
-    adminHidden: false,
     campaignOutcome: { in: [...EXPIRED_OUTCOMES] },
     campaignEndsAt: { lte: now },
   };
@@ -34,7 +33,7 @@ export async function autoExtendCampaignOneDay(
   const sub = await prisma.productSubmission.findUnique({
     where: { id: submissionId },
   });
-  if (!sub) return false;
+  if (!sub || sub.status !== APPROVAL_STATUS.APPROVED) return false;
 
   const campaignEndsAt = new Date();
   campaignEndsAt.setDate(campaignEndsAt.getDate() + AUTO_EXTEND_DAYS);
@@ -44,6 +43,7 @@ export async function autoExtendCampaignOneDay(
     data: {
       campaignEndsAt,
       campaignOutcome: CAMPAIGN_OUTCOME.ACTIVE,
+      ...(!sub.adminHidden ? { publishedOnStore: true } : {}),
     },
   });
 
@@ -87,9 +87,11 @@ export async function processExpiredCampaigns(options?: {
   notify?: boolean;
   submissionId?: string;
 }): Promise<{ extended: number; succeeded: number }> {
+  await repairApprovedStoreVisibility(options?.submissionId);
+
   const now = new Date();
   const ended = await prisma.productSubmission.findMany({
-    where: expiredVisibleWhere(now, options?.submissionId),
+    where: expiredSubmissionWhere(now, options?.submissionId),
     select: {
       id: true,
       suggestedQuantity: true,
@@ -101,9 +103,13 @@ export async function processExpiredCampaigns(options?: {
   let succeeded = 0;
 
   for (const sub of ended) {
-    const result = await processSubmissionExpiry(sub, options);
-    if (result === "extended") extended++;
-    else if (result === "succeeded") succeeded++;
+    try {
+      const result = await processSubmissionExpiry(sub, options);
+      if (result === "extended") extended++;
+      else if (result === "succeeded") succeeded++;
+    } catch (err) {
+      console.error(`[processExpiredCampaigns] ${sub.id}:`, err);
+    }
   }
 
   return { extended, succeeded };

@@ -103,7 +103,11 @@ function visibleSubmissionWhere(
 export async function fetchActiveGroupBuyOpportunities(): Promise<
   GroupBuyOpportunity[]
 > {
-  await processExpiredCampaigns({ notify: false });
+  try {
+    await processExpiredCampaigns({ notify: false });
+  } catch (err) {
+    console.error("[fetchActiveGroupBuyOpportunities] processExpired:", err);
+  }
 
   const rows = await prisma.productSubmission.findMany({
     where: visibleSubmissionWhere(),
@@ -117,7 +121,14 @@ export async function fetchActiveGroupBuyOpportunities(): Promise<
 export async function fetchActiveGroupBuyOpportunitiesForCategory(
   categoryId: number,
 ): Promise<GroupBuyOpportunity[]> {
-  await processExpiredCampaigns({ notify: false });
+  try {
+    await processExpiredCampaigns({ notify: false });
+  } catch (err) {
+    console.error(
+      "[fetchActiveGroupBuyOpportunitiesForCategory] processExpired:",
+      err,
+    );
+  }
 
   const productIds = await fetchProductIdsInCategory(categoryId);
   if (productIds.length === 0) return [];

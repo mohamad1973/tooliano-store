@@ -20,9 +20,7 @@ export async function GroupBuyOpportunitiesForCategory({
     opportunities =
       await fetchActiveGroupBuyOpportunitiesForCategory(categoryId);
   } catch (err) {
-    if (process.env.NODE_ENV === "development") {
-      console.error("[GroupBuyOpportunitiesForCategory]", err);
-    }
+    console.error("[GroupBuyOpportunitiesForCategory]", err);
   }
 
   if (opportunities.length === 0) return null;
