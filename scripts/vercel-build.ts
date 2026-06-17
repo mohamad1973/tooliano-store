@@ -38,4 +38,9 @@ if (pushSchema) {
 console.log("▶ next build");
 run("npx next build");
 
+if (onVercel) {
+  console.log("▶ repair production store (visibility + campaign dates)");
+  run("npx tsx scripts/repair-production-store.ts");
+}
+
 console.log("\n✅ vercel-build اكتمل");

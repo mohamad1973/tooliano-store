@@ -9,7 +9,7 @@ import {
   type CampaignDisplayStatus,
 } from "@/lib/campaign/status";
 import { resolveSubmissionDisplayImageUrl } from "@/lib/submission-display-image";
-import { ensureSubmissionCampaignExtended } from "@/lib/campaign/auto-extend";
+import { prepareApprovedSubmissionsForListing } from "@/lib/campaign/prepare-listing";
 import type { ProductImage } from "@/types/product";
 
 export type SubmissionCampaignView = {
@@ -43,7 +43,7 @@ export type SubmissionCampaignView = {
 export async function fetchSubmissionCampaignById(
   id: string,
 ): Promise<SubmissionCampaignView | null> {
-  await ensureSubmissionCampaignExtended(id);
+  await prepareApprovedSubmissionsForListing(id);
 
   const row = await prisma.productSubmission.findUnique({
     where: { id },
@@ -53,7 +53,6 @@ export async function fetchSubmissionCampaignById(
   });
 
   if (!row || row.status !== APPROVAL_STATUS.APPROVED) return null;
-  if (!row.publishedOnStore) return null;
   if (row.adminHidden) return null;
   if (!row.campaignEndsAt) return null;
   if (row.suggestedRetailPrice == null || row.suggestedGroupPrice == null) {
@@ -114,7 +113,6 @@ export async function fetchSubmissionCampaignByWooProductId(
     where: {
       wooProductId,
       status: APPROVAL_STATUS.APPROVED,
-      publishedOnStore: true,
       adminHidden: false,
     },
     orderBy: { updatedAt: "desc" },

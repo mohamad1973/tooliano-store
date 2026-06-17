@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { buildCampaignProgress } from "@/lib/campaign/progress";
-import { ensureSubmissionCampaignExtended } from "@/lib/campaign/auto-extend";
+import { prepareApprovedSubmissionsForListing } from "@/lib/campaign/prepare-listing";
 import {
   canReserveCampaign,
   resolveCampaignDisplayStatus,
@@ -14,7 +14,7 @@ export async function GET(_request: Request, { params }: Params) {
   const { submissionId } = await params;
 
   try {
-    await ensureSubmissionCampaignExtended(submissionId);
+    await prepareApprovedSubmissionsForListing(submissionId);
   } catch (err) {
     console.error("[campaigns/progress] extend:", err);
   }

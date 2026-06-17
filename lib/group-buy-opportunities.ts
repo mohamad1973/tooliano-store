@@ -9,7 +9,7 @@ import {
 } from "@/lib/campaign/status";
 import { resolveSubmissionDisplayImageUrl } from "@/lib/submission-display-image";
 import { fetchProductIdsInCategory } from "@/lib/products";
-import { processExpiredCampaigns } from "@/lib/campaign/auto-extend";
+import { prepareApprovedSubmissionsForListing } from "@/lib/campaign/prepare-listing";
 import type { Prisma } from "@prisma/client";
 
 export type GroupBuyOpportunity = {
@@ -49,33 +49,52 @@ async function mapSubmissionRows(
       r.campaignEndsAt != null,
   );
 
-  const mapped = await Promise.all(
-    filtered.map(async (row) => ({
-      id: row.id,
-      productName: row.productName,
-      productType: row.productType,
-      productCondition: row.productCondition,
-      productImageUrl: await resolveSubmissionDisplayImageUrl(
-        row.productImageUrl,
-        row.wooProductId,
-      ),
-      vendorCompanyName:
-        row.vendor.vendorProfile?.companyName ?? row.vendor.username,
-      targetQuantity: row.suggestedQuantity,
-      reservedQuantity: row.reservedQuantity,
-      boostReservedQuantity: row.boostReservedQuantity ?? 0,
-      campaignEndsAt: row.campaignEndsAt!,
-      campaignOutcome: row.campaignOutcome,
-      displayStatus: resolveCampaignDisplayStatus(
-        row.campaignOutcome,
-        row.campaignEndsAt,
-        now,
-      ),
-      suggestedRetailPrice: row.suggestedRetailPrice!,
-      suggestedGroupPrice: row.suggestedGroupPrice!,
-      wooProductId: row.wooProductId,
-    })),
+  const results = await Promise.allSettled(
+    filtered.map(async (row) => {
+      let productImageUrl: string | null = null;
+      try {
+        productImageUrl = await resolveSubmissionDisplayImageUrl(
+          row.productImageUrl,
+          row.wooProductId,
+        );
+      } catch (err) {
+        console.error(
+          `[mapSubmissionRows] image ${row.id}:`,
+          err,
+        );
+      }
+
+      return {
+        id: row.id,
+        productName: row.productName,
+        productType: row.productType,
+        productCondition: row.productCondition,
+        productImageUrl,
+        vendorCompanyName:
+          row.vendor.vendorProfile?.companyName ?? row.vendor.username,
+        targetQuantity: row.suggestedQuantity,
+        reservedQuantity: row.reservedQuantity,
+        boostReservedQuantity: row.boostReservedQuantity ?? 0,
+        campaignEndsAt: row.campaignEndsAt!,
+        campaignOutcome: row.campaignOutcome,
+        displayStatus: resolveCampaignDisplayStatus(
+          row.campaignOutcome,
+          row.campaignEndsAt,
+          now,
+        ),
+        suggestedRetailPrice: row.suggestedRetailPrice!,
+        suggestedGroupPrice: row.suggestedGroupPrice!,
+        wooProductId: row.wooProductId,
+      } satisfies GroupBuyOpportunity;
+    }),
   );
+
+  const mapped = results
+    .filter(
+      (r): r is PromiseFulfilledResult<GroupBuyOpportunity> =>
+        r.status === "fulfilled",
+    )
+    .map((r) => r.value);
 
   return mapped.sort((a, b) => {
     const byStatus = compareCampaignDisplayStatus(
@@ -87,12 +106,15 @@ async function mapSubmissionRows(
   });
 }
 
-function visibleSubmissionWhere(
+/**
+ * شروط ظهور بطاقة المنتج في «فرص الشراء الجماعي»:
+ * معتمد + غير مخفي إدارياً فقط — بدون فلتر وقت أو publishedOnStore.
+ */
+function groupBuyListingWhere(
   wooProductIds?: number[],
 ): Prisma.ProductSubmissionWhereInput {
   return {
     status: APPROVAL_STATUS.APPROVED,
-    publishedOnStore: true,
     adminHidden: false,
     ...(wooProductIds?.length
       ? { wooProductId: { in: wooProductIds } }
@@ -104,13 +126,13 @@ export async function fetchActiveGroupBuyOpportunities(): Promise<
   GroupBuyOpportunity[]
 > {
   try {
-    await processExpiredCampaigns({ notify: false });
+    await prepareApprovedSubmissionsForListing();
   } catch (err) {
-    console.error("[fetchActiveGroupBuyOpportunities] processExpired:", err);
+    console.error("[fetchActiveGroupBuyOpportunities] prepare:", err);
   }
 
   const rows = await prisma.productSubmission.findMany({
-    where: visibleSubmissionWhere(),
+    where: groupBuyListingWhere(),
     include: submissionInclude,
     orderBy: { reviewedAt: "desc" },
   });
@@ -122,10 +144,10 @@ export async function fetchActiveGroupBuyOpportunitiesForCategory(
   categoryId: number,
 ): Promise<GroupBuyOpportunity[]> {
   try {
-    await processExpiredCampaigns({ notify: false });
+    await prepareApprovedSubmissionsForListing();
   } catch (err) {
     console.error(
-      "[fetchActiveGroupBuyOpportunitiesForCategory] processExpired:",
+      "[fetchActiveGroupBuyOpportunitiesForCategory] prepare:",
       err,
     );
   }
@@ -134,7 +156,7 @@ export async function fetchActiveGroupBuyOpportunitiesForCategory(
   if (productIds.length === 0) return [];
 
   const rows = await prisma.productSubmission.findMany({
-    where: visibleSubmissionWhere(productIds),
+    where: groupBuyListingWhere(productIds),
     include: submissionInclude,
     orderBy: { reviewedAt: "desc" },
   });
