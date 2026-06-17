@@ -18,6 +18,15 @@ function run(cmd: string) {
   execSync(cmd, { stdio: "inherit", env, cwd: process.cwd() });
 }
 
+function runOptional(cmd: string) {
+  try {
+    run(cmd);
+  } catch (err) {
+    console.warn("⚠️ optional build step failed; deployment will continue.");
+    console.warn(err instanceof Error ? err.message : err);
+  }
+}
+
 console.log("▶ prisma generate");
 run("npx prisma generate");
 
@@ -40,7 +49,7 @@ run("npx next build");
 
 if (onVercel) {
   console.log("▶ repair production store (visibility + campaign dates)");
-  run("npx tsx scripts/repair-production-store.ts");
+  runOptional("npx tsx scripts/repair-production-store.ts");
 }
 
 console.log("\n✅ vercel-build اكتمل");
