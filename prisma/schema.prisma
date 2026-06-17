@@ -239,6 +239,9 @@ model HomeBanner {
   imageUrl     String
   categorySlug String?
   title        String?
+  placement    String   @default("hero_main")
+  href         String?
+  altText      String?
   sortOrder    Int      @default(0)
   enabled      Boolean  @default(true)
   createdAt    DateTime @default(now())

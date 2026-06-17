@@ -3,6 +3,11 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AdminCmsMessage } from "@/components/admin/cms/AdminCmsMessage";
+import {
+  HOME_BANNER_PLACEMENT_LABELS,
+  HOME_BANNER_PLACEMENTS,
+  type HomeBannerPlacement,
+} from "@/lib/cms/home-banner-layout";
 
 const ACCEPT = "image/jpeg,image/png,image/webp";
 
@@ -11,8 +16,22 @@ type Item = {
   imageUrl: string;
   categorySlug: string | null;
   title: string | null;
+  placement: string;
+  href: string | null;
+  altText: string | null;
   sortOrder: number;
   enabled: boolean;
+};
+
+const PLACEMENTS = Object.values(HOME_BANNER_PLACEMENTS);
+
+type BannerFormState = {
+  imageUrl: string;
+  categorySlug: string;
+  title: string;
+  placement: HomeBannerPlacement;
+  href: string;
+  altText: string;
 };
 
 async function extractError(res: Response, fallback: string): Promise<string> {
@@ -38,10 +57,13 @@ export function BannersEditor({ initial }: { initial: Item[] }) {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [uploadingFor, setUploadingFor] = useState<string | null>(null);
-  const [newBanner, setNewBanner] = useState({
+  const [newBanner, setNewBanner] = useState<BannerFormState>({
     imageUrl: "/banners/tools.jpg",
     categorySlug: "",
     title: "",
+    placement: HOME_BANNER_PLACEMENTS.HERO_MAIN,
+    href: "",
+    altText: "",
   });
 
   async function refresh() {
@@ -86,6 +108,9 @@ export function BannersEditor({ initial }: { initial: Item[] }) {
           imageUrl: item.imageUrl,
           categorySlug: item.categorySlug || null,
           title: item.title || null,
+          placement: item.placement,
+          href: item.href || null,
+          altText: item.altText || null,
           enabled: item.enabled,
         }),
       });
@@ -203,6 +228,26 @@ export function BannersEditor({ initial }: { initial: Item[] }) {
             </span>
           </div>
           <label className="text-sm">
+            نوع العنصر
+            <select
+              value={item.placement}
+              onChange={(e) =>
+                setItems((prev) =>
+                  prev.map((i) =>
+                    i.id === item.id ? { ...i, placement: e.target.value } : i,
+                  ),
+                )
+              }
+              className="mt-1 w-full rounded-lg border px-2 py-1 text-sm"
+            >
+              {PLACEMENTS.map((placement) => (
+                <option key={placement} value={placement}>
+                  {HOME_BANNER_PLACEMENT_LABELS[placement as HomeBannerPlacement]}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="text-sm">
             رابط الصورة
             <input
               value={item.imageUrl}
@@ -214,6 +259,24 @@ export function BannersEditor({ initial }: { initial: Item[] }) {
                 )
               }
               className="mt-1 w-full rounded-lg border px-2 py-1 text-sm"
+              dir="ltr"
+            />
+          </label>
+          <label className="text-sm">
+            رابط مباشر (اختياري)
+            <input
+              value={item.href ?? ""}
+              onChange={(e) =>
+                setItems((prev) =>
+                  prev.map((i) =>
+                    i.id === item.id
+                      ? { ...i, href: e.target.value || null }
+                      : i,
+                  ),
+                )
+              }
+              className="mt-1 w-full rounded-lg border px-2 py-1 text-sm"
+              placeholder="/products?category=slug"
               dir="ltr"
             />
           </label>
@@ -243,6 +306,22 @@ export function BannersEditor({ initial }: { initial: Item[] }) {
                   prev.map((i) =>
                     i.id === item.id
                       ? { ...i, title: e.target.value || null }
+                      : i,
+                  ),
+                )
+              }
+              className="mt-1 w-full rounded-lg border px-2 py-1 text-sm"
+            />
+          </label>
+          <label className="text-sm">
+            نص بديل للصورة (اختياري)
+            <input
+              value={item.altText ?? ""}
+              onChange={(e) =>
+                setItems((prev) =>
+                  prev.map((i) =>
+                    i.id === item.id
+                      ? { ...i, altText: e.target.value || null }
                       : i,
                   ),
                 )
@@ -300,6 +379,22 @@ export function BannersEditor({ initial }: { initial: Item[] }) {
           </span>
         </div>
         <div className="grid gap-2 sm:grid-cols-3">
+          <select
+            value={newBanner.placement}
+            onChange={(e) =>
+              setNewBanner((b) => ({
+                ...b,
+                placement: e.target.value as HomeBannerPlacement,
+              }))
+            }
+            className="rounded-lg border px-2 py-1 text-sm"
+          >
+            {PLACEMENTS.map((placement) => (
+              <option key={placement} value={placement}>
+                {HOME_BANNER_PLACEMENT_LABELS[placement as HomeBannerPlacement]}
+              </option>
+            ))}
+          </select>
           <input
             value={newBanner.imageUrl}
             onChange={(e) =>
@@ -310,6 +405,14 @@ export function BannersEditor({ initial }: { initial: Item[] }) {
             dir="ltr"
           />
           <input
+            value={newBanner.title}
+            onChange={(e) =>
+              setNewBanner((b) => ({ ...b, title: e.target.value }))
+            }
+            placeholder="العنوان"
+            className="rounded-lg border px-2 py-1 text-sm"
+          />
+          <input
             value={newBanner.categorySlug}
             onChange={(e) =>
               setNewBanner((b) => ({ ...b, categorySlug: e.target.value }))
@@ -317,6 +420,23 @@ export function BannersEditor({ initial }: { initial: Item[] }) {
             placeholder="slug التصنيف"
             className="rounded-lg border px-2 py-1 text-sm"
             dir="ltr"
+          />
+          <input
+            value={newBanner.href}
+            onChange={(e) =>
+              setNewBanner((b) => ({ ...b, href: e.target.value }))
+            }
+            placeholder="رابط مباشر اختياري"
+            className="rounded-lg border px-2 py-1 text-sm"
+            dir="ltr"
+          />
+          <input
+            value={newBanner.altText}
+            onChange={(e) =>
+              setNewBanner((b) => ({ ...b, altText: e.target.value }))
+            }
+            placeholder="نص بديل للصورة"
+            className="rounded-lg border px-2 py-1 text-sm"
           />
           <button
             type="button"

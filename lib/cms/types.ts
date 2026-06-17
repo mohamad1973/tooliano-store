@@ -34,6 +34,9 @@ export type HomeBannerView = {
   imageUrl: string;
   categorySlug: string | null;
   title: string | null;
+  placement: string;
+  href: string | null;
+  altText: string | null;
   sortOrder: number;
   enabled: boolean;
 };

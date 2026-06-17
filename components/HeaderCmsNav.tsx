@@ -30,10 +30,10 @@ function NavInner({ items }: { items: NavMenuItemView[] }) {
 
   const linkClass = (active: boolean) =>
     [
-      "whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-semibold transition sm:px-3 sm:py-1.5 sm:text-xs",
+      "whitespace-nowrap border-b-2 px-2 py-1 text-[11px] font-semibold transition sm:px-2.5 sm:text-xs",
       active
-        ? "bg-brand-gold text-brand-navy shadow-md shadow-brand-gold/30"
-        : "text-brand-navy/80 hover:bg-brand-gray hover:text-brand-navy",
+        ? "border-brand-gold text-brand-navy"
+        : "border-transparent text-brand-navy/75 hover:border-brand-gold/60 hover:text-brand-navy",
     ].join(" ");
 
   if (items.length === 0) {
@@ -46,7 +46,7 @@ function NavInner({ items }: { items: NavMenuItemView[] }) {
 
   return (
     <nav
-      className="flex max-w-full flex-nowrap items-center justify-start gap-1 sm:gap-1.5"
+      className="flex max-w-full flex-nowrap items-center justify-center gap-1 sm:gap-2"
       aria-label="قائمة الأقسام"
     >
       {items.map((item) => {

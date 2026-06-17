@@ -9,6 +9,7 @@ import {
   CAMPAIGN_OUTCOME,
   DEFAULT_CAMPAIGN_DAYS,
 } from "../lib/db/constants";
+import { DEFAULT_HOME_BANNERS, DEFAULT_NAV_MENU } from "../lib/cms/defaults";
 
 function computeCampaignEndsAt(row: {
   dealDurationDays: number;
@@ -37,6 +38,55 @@ async function main() {
 
   try {
     await prisma.$queryRaw`SELECT 1`;
+
+    let menuUpserts = 0;
+    for (const [sortOrder, item] of DEFAULT_NAV_MENU.entries()) {
+      const existing = await prisma.navMenuItem.findFirst({
+        where: { label: item.label },
+        select: { id: true },
+      });
+      const data = {
+        label: item.label,
+        href: item.href,
+        linkType: item.linkType,
+        categorySlug: "categorySlug" in item ? item.categorySlug : null,
+        sortOrder,
+        enabled: true,
+      };
+      if (existing) {
+        await prisma.navMenuItem.update({ where: { id: existing.id }, data });
+      } else {
+        await prisma.navMenuItem.create({ data });
+      }
+      menuUpserts++;
+    }
+
+    let bannerUpserts = 0;
+    for (const banner of DEFAULT_HOME_BANNERS) {
+      const existing = await prisma.homeBanner.findFirst({
+        where: {
+          title: banner.title,
+          placement: banner.placement,
+        },
+        select: { id: true },
+      });
+      const data = {
+        imageUrl: banner.imageUrl,
+        categorySlug: banner.categorySlug,
+        title: banner.title,
+        placement: banner.placement,
+        href: banner.href,
+        altText: banner.altText,
+        sortOrder: banner.sortOrder,
+        enabled: true,
+      };
+      if (existing) {
+        await prisma.homeBanner.update({ where: { id: existing.id }, data });
+      } else {
+        await prisma.homeBanner.create({ data });
+      }
+      bannerUpserts++;
+    }
 
     const published = await prisma.productSubmission.updateMany({
       where: {
@@ -125,6 +175,8 @@ async function main() {
     });
 
     console.log("=== إصلاح متجر الشراء الجماعي ===");
+    console.log(`عناصر المنيو ضُبطت: ${menuUpserts}`);
+    console.log(`بنرات الواجهة ضُبطت: ${bannerUpserts}`);
     console.log(`publishedOnStore أُصلح: ${published.count}`);
     console.log(`campaignEndsAt أُضيف: ${missingEnds.length}`);
     console.log(`تمديد تلقائي: ${extended} | نجاح كمية: ${succeeded}`);

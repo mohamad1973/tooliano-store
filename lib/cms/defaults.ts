@@ -1,4 +1,5 @@
 import { BANNER_IMAGE_PATHS } from "@/lib/category-banners";
+import { HOME_BANNER_PLACEMENTS } from "@/lib/cms/home-banner-layout";
 import { SITE_NAME } from "@/lib/constants";
 
 export const DEFAULT_MARQUEE_PHRASES = [
@@ -40,17 +41,19 @@ export const DEFAULT_SITE_SETTINGS: Record<string, string> = {
 };
 
 export const DEFAULT_NAV_MENU = [
-  { label: "الكل", href: "/products", linkType: "internal" as const },
-  {
-    label: "منتجات",
-    href: "/products",
-    linkType: "internal" as const,
-  },
-  {
-    label: "شراء جماعي",
-    href: "/campaign",
-    linkType: "internal" as const,
-  },
+  { label: "اكتشافات", href: "/products", linkType: "internal" as const },
+  { label: "أجهزة منزلية", href: "/products?category=home-appliances", linkType: "category" as const, categorySlug: "home-appliances" },
+  { label: "موبايلات", href: "/products?category=mobiles", linkType: "category" as const, categorySlug: "mobiles" },
+  { label: "تلفزيونات", href: "/products?category=televisions", linkType: "category" as const, categorySlug: "televisions" },
+  { label: "المنزل", href: "/products?category=home", linkType: "category" as const, categorySlug: "home" },
+  { label: "المطبخ", href: "/products?category=kitchen", linkType: "category" as const, categorySlug: "kitchen" },
+  { label: "السجاد", href: "/products?category=rugs", linkType: "category" as const, categorySlug: "rugs" },
+  { label: "المفروشات", href: "/products?category=furniture", linkType: "category" as const, categorySlug: "furniture" },
+  { label: "اللابت", href: "/products?category=laptops", linkType: "category" as const, categorySlug: "laptops" },
+  { label: "الصحة والجمال", href: "/products?category=health-beauty", linkType: "category" as const, categorySlug: "health-beauty" },
+  { label: "منتجات غذائية", href: "/products?category=food", linkType: "category" as const, categorySlug: "food" },
+  { label: "الأزياء والموضة", href: "/products?category=fashion", linkType: "category" as const, categorySlug: "fashion" },
+  { label: "أطفال وألعاب", href: "/products?category=kids-toys", linkType: "category" as const, categorySlug: "kids-toys" },
 ];
 
 export const DEFAULT_HOME_SECTIONS = [
@@ -59,12 +62,67 @@ export const DEFAULT_HOME_SECTIONS = [
   { key: "campaign_cta", label: "رابط الحملة الحالية", sortOrder: 2 },
 ] as const;
 
-export const DEFAULT_HOME_BANNERS = BANNER_IMAGE_PATHS.map((imageUrl, i) => ({
-  imageUrl,
-  categorySlug: null as string | null,
-  title: null as string | null,
-  sortOrder: i,
-}));
+export const DEFAULT_HOME_BANNERS = [
+  {
+    imageUrl: BANNER_IMAGE_PATHS[0],
+    categorySlug: null as string | null,
+    title: "شحن مجاني للطلبات فوق 1000 جنيه",
+    placement: HOME_BANNER_PLACEMENTS.TOP_STRIP,
+    href: "/products",
+    altText: "شحن مجاني للطلبات فوق 1000 جنيه",
+    sortOrder: 0,
+  },
+  {
+    imageUrl: BANNER_IMAGE_PATHS[3],
+    categorySlug: null as string | null,
+    title: "كل تجهيزات الجهاز",
+    placement: HOME_BANNER_PLACEMENTS.HERO_MAIN,
+    href: "/products",
+    altText: "كل تجهيزات الجهاز",
+    sortOrder: 1,
+  },
+  {
+    imageUrl: BANNER_IMAGE_PATHS[1],
+    categorySlug: null as string | null,
+    title: "عرض خاص",
+    placement: HOME_BANNER_PLACEMENTS.SIDE_PROMO,
+    href: "/products",
+    altText: "عرض خاص",
+    sortOrder: 2,
+  },
+  {
+    imageUrl: BANNER_IMAGE_PATHS[2],
+    categorySlug: null as string | null,
+    title: "خصم إضافي",
+    placement: HOME_BANNER_PLACEMENTS.SIDE_PROMO,
+    href: "/products",
+    altText: "خصم إضافي",
+    sortOrder: 3,
+  },
+  ...[
+    "السجاد",
+    "موبايلات",
+    "أدوات رياضية",
+    "العناية الشخصية",
+    "لابتوب",
+    "مبردات الهواء",
+    "الشنط",
+    "جيمينج",
+    "ثلاجات",
+    "مراوح",
+    "تلفزيونات",
+    "وصل حديثاً",
+    "الأكثر مبيعاً",
+  ].map((title, index) => ({
+    imageUrl: BANNER_IMAGE_PATHS[index % BANNER_IMAGE_PATHS.length],
+    categorySlug: null as string | null,
+    title,
+    placement: HOME_BANNER_PLACEMENTS.CATEGORY_ICON,
+    href: "/products",
+    altText: title,
+    sortOrder: index + 4,
+  })),
+] as const;
 
 export const DEFAULT_FAQ = {
   title: "أسئلة شائعة",

@@ -24,6 +24,7 @@ import { SOCIAL_PLATFORMS } from "@/lib/cms/social-platforms";
 import { PAGE_KEYS } from "@/lib/cms/page-blocks";
 import { sanitizeRichHtml } from "@/lib/cms/sanitize";
 import { resolveNavMenuItems } from "@/lib/cms/resolve-nav-menu";
+import { normalizeHomeBannerPlacement } from "@/lib/cms/home-banner-layout";
 import { CMS_CACHE_TAG } from "@/lib/cms/revalidate";
 import type {
   FaqContent,
@@ -171,6 +172,9 @@ async function loadHomeBannersRaw(): Promise<HomeBannerView[]> {
     imageUrl: r.imageUrl,
     categorySlug: r.categorySlug,
     title: r.title,
+    placement: normalizeHomeBannerPlacement(r.placement),
+    href: r.href,
+    altText: r.altText,
     sortOrder: r.sortOrder,
     enabled: r.enabled,
   }));
@@ -264,7 +268,14 @@ export async function isMarqueeEnabled(): Promise<boolean> {
 }
 
 export async function getHomeBannersResolved(): Promise<
-  { id: string; imageUrl: string; href: string; label: string }[]
+  {
+    id: string;
+    imageUrl: string;
+    href: string;
+    label: string;
+    placement: string;
+    altText: string;
+  }[]
 > {
   const banners = (await cachedBanners()).filter((b) => b.enabled);
   let categories: Awaited<ReturnType<typeof fetchProductCategories>> = [];
@@ -280,12 +291,14 @@ export async function getHomeBannersResolved(): Promise<
       : categories[index];
     const slug = banner.categorySlug ?? cat?.slug ?? "";
     const label = banner.title ?? cat?.name ?? "تصفح";
-    const href = slug ? categoryProductsHref(slug) : "/products";
+    const href = banner.href ?? (slug ? categoryProductsHref(slug) : "/products");
     return {
       id: banner.id,
       imageUrl: banner.imageUrl,
       href,
       label,
+      placement: banner.placement,
+      altText: banner.altText ?? label,
     };
   });
 }

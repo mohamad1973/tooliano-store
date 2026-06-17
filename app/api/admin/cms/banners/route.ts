@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db/prisma";
 import { requireApiAdmin, isSessionResponse } from "@/lib/auth/api-session";
 import { cmsMutationResponse, parseBody } from "@/lib/cms/admin-api";
+import { normalizeHomeBannerPlacement } from "@/lib/cms/home-banner-layout";
 
 export async function GET() {
   const session = await requireApiAdmin();
@@ -20,6 +21,9 @@ export async function POST(request: Request) {
     imageUrl: string;
     categorySlug?: string;
     title?: string;
+    placement?: string;
+    href?: string;
+    altText?: string;
   }>(request);
   if (body instanceof Response) return body;
   if (!body.imageUrl?.trim()) {
@@ -32,6 +36,9 @@ export async function POST(request: Request) {
       imageUrl: body.imageUrl.trim(),
       categorySlug: body.categorySlug?.trim() || null,
       title: body.title?.trim() || null,
+      placement: normalizeHomeBannerPlacement(body.placement),
+      href: body.href?.trim() || null,
+      altText: body.altText?.trim() || null,
       sortOrder: (max._max.sortOrder ?? -1) + 1,
       enabled: true,
     },

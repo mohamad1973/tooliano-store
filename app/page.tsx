@@ -7,8 +7,8 @@ export default function HomePage() {
   return (
     <>
       <SiteHeader />
-      <PageBlocksRenderer />
       <HomePageSections />
+      <PageBlocksRenderer />
       <SiteFooter />
     </>
   );

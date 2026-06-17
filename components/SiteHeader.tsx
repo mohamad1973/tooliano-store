@@ -84,9 +84,9 @@ export async function SiteHeader() {
             </div>
 
             <div
-              className={`min-h-[2.5rem] min-w-0 flex-1 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-brand-gold/60 ${navHiddenOnMobile}`}
+              className={`min-h-[2rem] min-w-0 flex-1 overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-brand-gold/60 ${navHiddenOnMobile}`}
             >
-              <div className="inline-flex min-w-max rounded-2xl border border-brand-gray bg-brand-white px-1.5 py-1 shadow-sm sm:px-2">
+              <div className="inline-flex min-w-max px-1 py-0.5 sm:px-2">
                 <HeaderCmsNav items={menuItems} />
               </div>
             </div>
