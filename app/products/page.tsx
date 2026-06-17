@@ -8,10 +8,13 @@ import { DEFAULT_PER_PAGE, SITE_NAME } from "@/lib/constants";
 import { fetchProducts } from "@/lib/products";
 
 type Props = {
-  searchParams?: Promise<{ category?: string | string[] }>;
+  searchParams?: Promise<{
+    category?: string | string[];
+    search?: string | string[];
+  }>;
 };
 
-function firstSlug(
+function firstValue(
   raw: string | string[] | undefined,
 ): string | undefined {
   if (typeof raw === "string") return raw.trim() || undefined;
@@ -26,7 +29,14 @@ export async function generateMetadata({
   searchParams,
 }: Props): Promise<Metadata> {
   const sp = (await searchParams) ?? {};
-  const slug = firstSlug(sp.category);
+  const slug = firstValue(sp.category);
+  const search = firstValue(sp.search);
+  if (search) {
+    return {
+      title: `بحث: ${search} | ${SITE_NAME}`,
+      description: `نتائج البحث عن ${search} في منتجات Tooliano`,
+    };
+  }
   if (!slug) {
     return {
       title: `المنتجات | ${SITE_NAME}`,
@@ -48,7 +58,8 @@ export async function generateMetadata({
 
 export default async function ProductsPage({ searchParams }: Props) {
   const sp = (await searchParams) ?? {};
-  const slug = firstSlug(sp.category);
+  const slug = firstValue(sp.category);
+  const search = firstValue(sp.search);
 
   let categoryId: number | undefined;
   let categoryLabel: string | null = null;
@@ -70,6 +81,7 @@ export default async function ProductsPage({ searchParams }: Props) {
   try {
     const result = await fetchProducts({
       per_page: DEFAULT_PER_PAGE,
+      ...(search ? { search } : {}),
       ...(categoryId != null ? { category: categoryId } : {}),
     });
     products = result.products;
@@ -83,12 +95,18 @@ export default async function ProductsPage({ searchParams }: Props) {
       <main className="mx-auto max-w-6xl px-4 py-8">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-brand-navy">
-            {categoryLabel ? categoryLabel : "المنتجات"}
+            {search
+              ? `نتائج البحث عن «${search}»`
+              : categoryLabel
+                ? categoryLabel
+                : "المنتجات"}
           </h1>
           <p className="mt-1 text-sm text-brand-navy/70">
-            {categoryLabel
-              ? `منتجات التصنيف «${categoryLabel}» من WooCommerce`
-              : "بيانات حية من متجر WooCommerce على tooliano.com"}
+            {search
+              ? "نتائج حية من منتجات WooCommerce المطابقة لكلمة البحث"
+              : categoryLabel
+                ? `منتجات التصنيف «${categoryLabel}» من WooCommerce`
+                : "بيانات حية من متجر WooCommerce على tooliano.com"}
           </p>
         </div>
 
@@ -110,8 +128,12 @@ export default async function ProductsPage({ searchParams }: Props) {
         {!error && products.length === 0 ? (
           <p className="text-brand-navy/70">
             {categoryLabel
-              ? "لا توجد منتجات في هذا التصنيف."
-              : "لا توجد منتجات منشورة حالياً."}
+              ? search
+                ? `لا توجد منتجات مطابقة للبحث «${search}» داخل هذا التصنيف.`
+                : "لا توجد منتجات في هذا التصنيف."
+              : search
+                ? `لا توجد منتجات مطابقة للبحث «${search}».`
+                : "لا توجد منتجات منشورة حالياً."}
           </p>
         ) : null}
 

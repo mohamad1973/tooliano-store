@@ -11,6 +11,7 @@ function iconWrap(
   label: string,
   children: ReactNode,
   external = true,
+  className = iconClass,
 ) {
   return (
     <Link
@@ -20,7 +21,7 @@ function iconWrap(
       {...(external
         ? { target: "_blank", rel: "noopener noreferrer" }
         : {})}
-      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-brand-navy transition hover:bg-brand-gold/20 hover:text-brand-gold"
+      className={className}
     >
       {children}
     </Link>
@@ -95,6 +96,7 @@ type Props = {
   showSocialDesktop: boolean;
   showSocialMobile: boolean;
   clickMode: "chooser" | "direct";
+  onDark?: boolean;
 };
 
 export function HeaderIconsSocial({
@@ -102,26 +104,48 @@ export function HeaderIconsSocial({
   showSocialDesktop,
   showSocialMobile,
   clickMode,
+  onDark = false,
 }: Props) {
   const base = WP_STORE_ORIGIN;
+  const currentIconClass = onDark
+    ? "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-brand-white transition hover:bg-brand-gold/20 hover:text-brand-gold sm:h-9 sm:w-9"
+    : iconClass;
 
   return (
     <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
-      <div className="flex items-center gap-0.5 border-brand-gray ps-2 sm:gap-1 sm:ps-3 md:border-s">
-        <HeaderAccountLink className={iconClass}>
+      <div
+        className={`flex items-center gap-0.5 ps-2 sm:gap-1 sm:ps-3 ${
+          onDark
+            ? "border-brand-white/15 md:border-s"
+            : "border-brand-gray md:border-s"
+        }`}
+      >
+        <HeaderAccountLink className={currentIconClass}>
           <IconUser />
         </HeaderAccountLink>
-        <HeaderWalletLink className={iconClass} />
+        <HeaderWalletLink className={currentIconClass} />
         <Link
           href="/register"
           aria-label="إنشاء حساب"
           title="إنشاء حساب"
-          className={`${iconClass} hidden text-[10px] font-bold sm:flex sm:w-auto sm:px-2`}
+          className={`${currentIconClass} hidden text-[10px] font-bold sm:flex sm:w-auto sm:px-2`}
         >
           تسجيل
         </Link>
-        {iconWrap(`${base}/cart/`, "سلة التسوق", <IconCart />)}
-        {iconWrap(`${WP_WISHLIST_URL}`, "المفضلة", <IconHeart />)}
+        {iconWrap(
+          `${base}/cart/`,
+          "سلة التسوق",
+          <IconCart />,
+          true,
+          currentIconClass,
+        )}
+        {iconWrap(
+          `${WP_WISHLIST_URL}`,
+          "المفضلة",
+          <IconHeart />,
+          true,
+          currentIconClass,
+        )}
       </div>
 
       {showSocialDesktop && socialLinks.length > 0 ? (
@@ -130,6 +154,7 @@ export function HeaderIconsSocial({
           clickMode={clickMode}
           layout="horizontal"
           className="hidden ps-2 md:flex sm:ps-4"
+          onDark={onDark}
         />
       ) : null}
       {showSocialMobile && socialLinks.length > 0 ? (
@@ -138,6 +163,7 @@ export function HeaderIconsSocial({
           clickMode={clickMode}
           layout="horizontal"
           className="flex ps-2 md:hidden sm:ps-4"
+          onDark={onDark}
         />
       ) : null}
     </div>

@@ -10,6 +10,7 @@ import {
 } from "@/lib/cms/get-site-content";
 import { HeaderCmsNav } from "@/components/HeaderCmsNav";
 import { HeaderIconsSocial } from "@/components/HeaderIconsSocial";
+import { HeaderSearchDropdown } from "@/components/HeaderSearchDropdown";
 import { HeaderNotificationsBell } from "@/components/notifications/HeaderNotificationsBell";
 import { MobileNavDrawer } from "@/components/mobile/MobileNavDrawer";
 import { TopMarquee } from "@/components/TopMarquee";
@@ -36,11 +37,33 @@ export async function SiteHeader() {
 
   return (
     <div className="sticky top-0 z-50 shadow-[0_4px_24px_-8px_rgba(20,33,61,0.2)]">
-      {showMarquee ? (
-        <div className={mobileDisplay.showMarquee ? "" : "hidden md:block"}>
-          <TopMarquee />
+      <div className="border-b border-brand-gold/30 bg-brand-navy text-brand-white">
+        <div className="mx-auto flex min-h-10 max-w-6xl flex-col gap-1 px-2 py-1 sm:flex-row sm:items-center sm:justify-between sm:px-3">
+          {showMarquee ? (
+            <div
+              className={`min-w-0 sm:w-1/2 ${
+                mobileDisplay.showMarquee ? "" : "hidden md:block"
+              }`}
+            >
+              <TopMarquee compact />
+            </div>
+          ) : (
+            <div className="hidden min-w-0 sm:block sm:w-1/2" />
+          )}
+
+          <div className="flex min-w-0 items-center justify-end gap-1 sm:w-1/2">
+            <HeaderSearchDropdown />
+            <HeaderNotificationsBell onDark />
+            <HeaderIconsSocial
+              socialLinks={socialLinks}
+              showSocialDesktop={socialDisplay.showHeader}
+              showSocialMobile={mobileDisplay.socialShowHeader}
+              clickMode={socialDisplay.clickMode}
+              onDark
+            />
+          </div>
         </div>
-      ) : null}
+      </div>
       <header className="border-b border-brand-gray bg-brand-white backdrop-blur-md">
         <div className="mx-auto max-w-6xl px-2 py-2 sm:px-3 sm:py-2.5">
           <div className="flex items-center gap-2 sm:gap-3">
@@ -91,15 +114,6 @@ export async function SiteHeader() {
               </div>
             </div>
 
-            <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
-              <HeaderNotificationsBell />
-              <HeaderIconsSocial
-                socialLinks={socialLinks}
-                showSocialDesktop={socialDisplay.showHeader}
-                showSocialMobile={mobileDisplay.socialShowHeader}
-                clickMode={socialDisplay.clickMode}
-              />
-            </div>
           </div>
         </div>
       </header>
