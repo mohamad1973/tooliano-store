@@ -16,6 +16,32 @@ export const HOME_BANNER_PLACEMENT_LABELS: Record<HomeBannerPlacement, string> =
     category_icon: "أيقونة تصنيف دائرية",
   };
 
+export const HOME_BANNER_SIZE_HINTS: Record<
+  HomeBannerPlacement,
+  { size: string; ratio: string; note: string }
+> = {
+  top_strip: {
+    size: "1920 × 280 px",
+    ratio: "6.8:1",
+    note: "مناسب للبنر العلوي العريض.",
+  },
+  hero_main: {
+    size: "1440 × 630 px",
+    ratio: "16:7",
+    note: "مناسب للبنر الرئيسي الكبير.",
+  },
+  side_promo: {
+    size: "600 × 270 px",
+    ratio: "5:2.25",
+    note: "مناسب للبنرات الجانبية الصغيرة.",
+  },
+  category_icon: {
+    size: "400 × 400 px",
+    ratio: "1:1",
+    note: "مناسب للأيقونات الدائرية؛ يفضّل ترك العنصر في منتصف الصورة.",
+  },
+};
+
 export function normalizeHomeBannerPlacement(
   value: string | null | undefined,
 ): HomeBannerPlacement {

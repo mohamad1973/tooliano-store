@@ -6,6 +6,7 @@ import { AdminCmsMessage } from "@/components/admin/cms/AdminCmsMessage";
 import {
   HOME_BANNER_PLACEMENT_LABELS,
   HOME_BANNER_PLACEMENTS,
+  HOME_BANNER_SIZE_HINTS,
   type HomeBannerPlacement,
 } from "@/lib/cms/home-banner-layout";
 
@@ -33,6 +34,30 @@ type BannerFormState = {
   href: string;
   altText: string;
 };
+
+function placementHint(placement: string) {
+  const safePlacement = PLACEMENTS.includes(placement as HomeBannerPlacement)
+    ? (placement as HomeBannerPlacement)
+    : HOME_BANNER_PLACEMENTS.HERO_MAIN;
+  return HOME_BANNER_SIZE_HINTS[safePlacement];
+}
+
+function BannerSizeHint({ placement }: { placement: string }) {
+  const hint = placementHint(placement);
+  return (
+    <p className="mt-1 rounded-lg bg-brand-gray/30 px-2 py-1 text-xs leading-relaxed text-brand-navy/70">
+      المقاس المرشح:{" "}
+      <span className="font-semibold text-brand-navy" dir="ltr">
+        {hint.size}
+      </span>{" "}
+      — النسبة{" "}
+      <span className="font-semibold text-brand-navy" dir="ltr">
+        {hint.ratio}
+      </span>
+      . {hint.note} يفضل رفع صورة بنفس النسبة لتجنب القص.
+    </p>
+  );
+}
 
 async function extractError(res: Response, fallback: string): Promise<string> {
   let serverError: string | null = null;
@@ -224,7 +249,7 @@ export function BannersEditor({ initial }: { initial: Item[] }) {
               />
             </label>
             <span className="text-xs text-brand-navy/60">
-              JPG / PNG / WebP — تُحفَظ تلقائياً بعد الرفع
+              JPG / PNG / WebP — يفضل رفع صورة بنفس النسبة لتجنب القص
             </span>
           </div>
           <label className="text-sm">
@@ -246,6 +271,7 @@ export function BannersEditor({ initial }: { initial: Item[] }) {
                 </option>
               ))}
             </select>
+            <BannerSizeHint placement={item.placement} />
           </label>
           <label className="text-sm">
             رابط الصورة
@@ -375,7 +401,7 @@ export function BannersEditor({ initial }: { initial: Item[] }) {
             />
           </label>
           <span className="text-xs text-brand-navy/60">
-            أو ألصق رابط الصورة في الحقل أدناه
+            أو ألصق رابط الصورة في الحقل أدناه — يفضل رفع صورة بنفس النسبة لتجنب القص
           </span>
         </div>
         <div className="grid gap-2 sm:grid-cols-3">
@@ -395,6 +421,9 @@ export function BannersEditor({ initial }: { initial: Item[] }) {
               </option>
             ))}
           </select>
+          <div className="sm:col-span-2">
+            <BannerSizeHint placement={newBanner.placement} />
+          </div>
           <input
             value={newBanner.imageUrl}
             onChange={(e) =>
