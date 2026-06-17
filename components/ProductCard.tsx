@@ -9,7 +9,7 @@ type Props = {
 
 export function ProductCard({ product }: Props) {
   return (
-    <article className="group flex flex-col overflow-hidden rounded-xl border border-brand-gray bg-brand-white shadow-sm transition hover:border-brand-gold/40 hover:shadow-md">
+    <article className="group flex h-full flex-col overflow-hidden rounded-xl border border-brand-gray bg-brand-white shadow-sm transition hover:border-brand-gold/40 hover:shadow-md">
       <Link
         href={`/products/${product.id}`}
         className="relative aspect-square overflow-hidden bg-brand-gray"
@@ -36,16 +36,14 @@ export function ProductCard({ product }: Props) {
 
       <div className="flex flex-1 flex-col gap-2 p-3">
         <Link href={`/products/${product.id}`}>
-          <h2 className="line-clamp-2 text-sm font-semibold leading-snug text-brand-navy hover:text-brand-gold">
+          <h2 className="line-clamp-2 min-h-[2.5rem] text-sm font-semibold leading-snug text-brand-navy hover:text-brand-gold">
             {product.name}
           </h2>
         </Link>
 
-        {product.categories[0] ? (
-          <p className="text-xs text-brand-navy/60">
-            {product.categories[0].name}
-          </p>
-        ) : null}
+        <p className="min-h-4 text-xs text-brand-navy/60">
+          {product.categories[0]?.name ?? ""}
+        </p>
 
         <div className="mt-auto flex flex-wrap items-baseline gap-2">
           <span className="text-base font-bold text-brand-navy">
