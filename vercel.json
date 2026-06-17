@@ -4,6 +4,10 @@
     {
       "path": "/api/cron/sync-campaigns",
       "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/repair-production-store",
+      "schedule": "15 * * * *"
     }
   ]
 }

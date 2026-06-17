@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 type Props = {
+  submissionId?: string;
   endsAt: string;
   compact?: boolean;
-  /** عند انتهاء العداد: تحديث الصفحة لتمديد العرض تلقائياً على السيرفر */
+  /** عند انتهاء العداد: تمديد العرض من API بدون إعادة تحميل الصفحة */
   refreshOnExpiry?: boolean;
 };
 
@@ -70,41 +70,68 @@ function Unit({
 }
 
 export function CountdownTimer({
+  submissionId,
   endsAt,
   compact = false,
   refreshOnExpiry = true,
 }: Props) {
-  const router = useRouter();
-  const refreshed = useRef(false);
+  const extending = useRef(false);
+  const [currentEndsAt, setCurrentEndsAt] = useState(endsAt);
   const [remaining, setRemaining] = useState<Remaining>(() =>
     calcRemaining(endsAt),
   );
 
   useEffect(() => {
-    refreshed.current = false;
+    extending.current = false;
+    setCurrentEndsAt(endsAt);
+    setRemaining(calcRemaining(endsAt));
   }, [endsAt]);
+
+  const extendCampaign = useCallback(async () => {
+    if (!submissionId || extending.current) return;
+    extending.current = true;
+    try {
+      const res = await fetch(`/api/campaigns/${submissionId}/progress`, {
+        cache: "no-store",
+      });
+      if (!res.ok) {
+        extending.current = false;
+        return;
+      }
+      const json = (await res.json()) as { campaignEndsAt?: string };
+      if (json.campaignEndsAt) {
+        setCurrentEndsAt(json.campaignEndsAt);
+        setRemaining(calcRemaining(json.campaignEndsAt));
+        extending.current = calcRemaining(json.campaignEndsAt).expired;
+      } else {
+        extending.current = false;
+      }
+    } catch {
+      /* سيُعاد المحاولة مع النبضة التالية */
+      extending.current = false;
+    }
+  }, [submissionId]);
 
   useEffect(() => {
     function maybeRefresh(next: Remaining) {
       if (
         refreshOnExpiry &&
         next.expired &&
-        !refreshed.current
+        submissionId
       ) {
-        refreshed.current = true;
-        router.refresh();
+        void extendCampaign();
       }
     }
 
-    maybeRefresh(calcRemaining(endsAt));
+    maybeRefresh(calcRemaining(currentEndsAt));
 
     const id = setInterval(() => {
-      const next = calcRemaining(endsAt);
+      const next = calcRemaining(currentEndsAt);
       setRemaining(next);
       maybeRefresh(next);
     }, 1000);
     return () => clearInterval(id);
-  }, [endsAt, refreshOnExpiry, router]);
+  }, [currentEndsAt, extendCampaign, refreshOnExpiry, submissionId]);
 
   if (remaining.expired) {
     return (

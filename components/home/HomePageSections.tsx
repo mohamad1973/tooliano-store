@@ -12,7 +12,7 @@ export async function HomePageSections() {
   return (
     <>
       {keys.has("category_banners") ? <CategoryBanners /> : null}
-      {keys.has("group_buy") ? <GroupBuyOpportunitiesSection /> : null}
+      <GroupBuyOpportunitiesSection />
       {keys.has("campaign_cta") ? (
         <main className="flex min-h-[20vh] flex-col items-center justify-center gap-4 px-4 py-12">
           <Link

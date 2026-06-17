@@ -23,7 +23,6 @@ export async function GET(_request: Request, { params }: Params) {
     where: {
       id: submissionId,
       status: APPROVAL_STATUS.APPROVED,
-      publishedOnStore: true,
       adminHidden: false,
     },
     select: {
@@ -57,6 +56,7 @@ export async function GET(_request: Request, { params }: Params) {
 
   return NextResponse.json({
     ...progress,
+    campaignEndsAt: submission.campaignEndsAt.toISOString(),
     displayStatus,
     canReserve: canReserveCampaign({
       campaignOutcome: submission.campaignOutcome,

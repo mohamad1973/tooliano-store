@@ -114,7 +114,10 @@ export default async function OfferCampaignPage({ params }: Props) {
               <h3 className="mb-4 text-center text-sm font-bold text-brand-navy">
                 الوقت المتبقي للعرض
               </h3>
-              <CountdownTimer endsAt={campaign.campaignEndsAt} />
+              <CountdownTimer
+                submissionId={campaign.id}
+                endsAt={campaign.campaignEndsAt}
+              />
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center gap-3 rounded-2xl bg-brand-gray/20 p-6">

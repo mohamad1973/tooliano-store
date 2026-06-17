@@ -25,8 +25,8 @@ export type GroupBuyOpportunity = {
   campaignEndsAt: Date;
   campaignOutcome: string;
   displayStatus: CampaignDisplayStatus;
-  suggestedRetailPrice: number;
-  suggestedGroupPrice: number;
+  suggestedRetailPrice: number | null;
+  suggestedGroupPrice: number | null;
   wooProductId: number | null;
 };
 
@@ -42,15 +42,11 @@ async function mapSubmissionRows(
   rows: SubmissionRow[],
 ): Promise<GroupBuyOpportunity[]> {
   const now = new Date();
-  const filtered = rows.filter(
-    (r) =>
-      r.suggestedRetailPrice != null &&
-      r.suggestedGroupPrice != null &&
-      r.campaignEndsAt != null,
-  );
 
   const results = await Promise.allSettled(
-    filtered.map(async (row) => {
+    rows.map(async (row) => {
+      const campaignEndsAt =
+        row.campaignEndsAt ?? new Date(Date.now() + 24 * 60 * 60 * 1000);
       let productImageUrl: string | null = null;
       try {
         productImageUrl = await resolveSubmissionDisplayImageUrl(
@@ -75,15 +71,15 @@ async function mapSubmissionRows(
         targetQuantity: row.suggestedQuantity,
         reservedQuantity: row.reservedQuantity,
         boostReservedQuantity: row.boostReservedQuantity ?? 0,
-        campaignEndsAt: row.campaignEndsAt!,
+        campaignEndsAt,
         campaignOutcome: row.campaignOutcome,
         displayStatus: resolveCampaignDisplayStatus(
           row.campaignOutcome,
-          row.campaignEndsAt,
+          campaignEndsAt,
           now,
         ),
-        suggestedRetailPrice: row.suggestedRetailPrice!,
-        suggestedGroupPrice: row.suggestedGroupPrice!,
+        suggestedRetailPrice: row.suggestedRetailPrice,
+        suggestedGroupPrice: row.suggestedGroupPrice,
         wooProductId: row.wooProductId,
       } satisfies GroupBuyOpportunity;
     }),

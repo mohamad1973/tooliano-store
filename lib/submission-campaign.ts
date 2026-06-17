@@ -55,9 +55,9 @@ export async function fetchSubmissionCampaignById(
   if (!row || row.status !== APPROVAL_STATUS.APPROVED) return null;
   if (row.adminHidden) return null;
   if (!row.campaignEndsAt) return null;
-  if (row.suggestedRetailPrice == null || row.suggestedGroupPrice == null) {
-    return null;
-  }
+  const hasGroupPrice = row.suggestedGroupPrice != null;
+  const retailPrice = row.suggestedRetailPrice ?? row.suggestedGroupPrice ?? 0;
+  const groupPrice = row.suggestedGroupPrice ?? row.suggestedRetailPrice ?? 0;
 
   const displayStatus = resolveCampaignDisplayStatus(
     row.campaignOutcome,
@@ -95,13 +95,15 @@ export async function fetchSubmissionCampaignById(
     campaignEndsAt: row.campaignEndsAt.toISOString(),
     campaignOutcome: row.campaignOutcome,
     displayStatus,
-    canReserve: canReserveCampaign({
-      campaignOutcome: row.campaignOutcome,
-      campaignEndsAt: row.campaignEndsAt,
-      adminHidden: row.adminHidden,
-    }),
-    retailPrice: row.suggestedRetailPrice,
-    groupPrice: row.suggestedGroupPrice,
+    canReserve:
+      hasGroupPrice &&
+      canReserveCampaign({
+        campaignOutcome: row.campaignOutcome,
+        campaignEndsAt: row.campaignEndsAt,
+        adminHidden: row.adminHidden,
+      }),
+    retailPrice,
+    groupPrice,
     wooProductId: row.wooProductId,
   };
 }

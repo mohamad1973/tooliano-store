@@ -20,6 +20,8 @@ type Props = {
 export function GroupBuyOpportunityCard({ opportunity }: Props) {
   const href = `/campaign/offer/${opportunity.id}`;
   const isActive = opportunity.displayStatus === "ACTIVE";
+  const hasGroupPrice = opportunity.suggestedGroupPrice != null;
+  const hasRetailPrice = opportunity.suggestedRetailPrice != null;
   const displayReserved = getDisplayReservedQuantity(
     opportunity.targetQuantity,
     opportunity.reservedQuantity,
@@ -87,10 +89,12 @@ export function GroupBuyOpportunityCard({ opportunity }: Props) {
           {opportunity.vendorCompanyName}
         </p>
         <p className="mt-2 text-sm font-semibold text-brand-gold">
-          {formatCurrency(opportunity.suggestedGroupPrice)}
-          <span className="ms-1 text-xs font-normal text-brand-navy/50 line-through">
-            {formatCurrency(opportunity.suggestedRetailPrice)}
-          </span>
+          {hasGroupPrice ? formatCurrency(opportunity.suggestedGroupPrice!) : "السعر قيد المراجعة"}
+          {hasRetailPrice ? (
+            <span className="ms-1 text-xs font-normal text-brand-navy/50 line-through">
+              {formatCurrency(opportunity.suggestedRetailPrice!)}
+            </span>
+          ) : null}
         </p>
 
         <div className="mt-4 flex flex-1 flex-col space-y-3">
@@ -101,6 +105,7 @@ export function GroupBuyOpportunityCard({ opportunity }: Props) {
                   الوقت المتبقي للعرض
                 </h4>
                 <CountdownTimer
+                  submissionId={opportunity.id}
                   endsAt={opportunity.campaignEndsAt.toISOString()}
                   compact
                 />
