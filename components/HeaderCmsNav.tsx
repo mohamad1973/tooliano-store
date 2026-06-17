@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import type { NavMenuItemView } from "@/lib/cms/types";
 
 function isHrefActive(
@@ -24,6 +24,7 @@ function isHrefActive(
 function NavInner({ items }: { items: NavMenuItemView[] }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [moreOpen, setMoreOpen] = useState(false);
   const search = searchParams.toString()
     ? `?${searchParams.toString()}`
     : "";
@@ -44,12 +45,15 @@ function NavInner({ items }: { items: NavMenuItemView[] }) {
     );
   }
 
+  const visibleItems = items.slice(0, 7);
+  const overflowItems = items.slice(7);
+
   return (
     <nav
       className="flex max-w-full flex-nowrap items-center justify-center gap-1 sm:gap-2"
       aria-label="قائمة الأقسام"
     >
-      {items.map((item) => {
+      {visibleItems.map((item) => {
         const external = item.linkType === "external";
         const active = !external && isHrefActive(pathname, search, item.href);
         return (
@@ -66,6 +70,50 @@ function NavInner({ items }: { items: NavMenuItemView[] }) {
           </Link>
         );
       })}
+      {overflowItems.length > 0 ? (
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setMoreOpen((open) => !open)}
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-transparent text-brand-navy transition hover:border-brand-gold/50 hover:bg-brand-gold/10 hover:text-brand-gold"
+            aria-label="عرض باقي القائمة"
+            aria-expanded={moreOpen}
+          >
+            <span className="flex flex-col gap-1" aria-hidden>
+              <span className="h-0.5 w-4 rounded-full bg-current" />
+              <span className="h-0.5 w-4 rounded-full bg-current" />
+              <span className="h-0.5 w-4 rounded-full bg-current" />
+            </span>
+          </button>
+          {moreOpen ? (
+            <div className="absolute end-0 top-full z-[120] mt-2 w-52 overflow-hidden rounded-2xl border border-brand-gray bg-brand-white py-2 text-start shadow-xl">
+              {overflowItems.map((item) => {
+                const external = item.linkType === "external";
+                const active =
+                  !external && isHrefActive(pathname, search, item.href);
+                return (
+                  <Link
+                    key={item.id}
+                    href={item.href}
+                    prefetch={false}
+                    onClick={() => setMoreOpen(false)}
+                    className={`block px-4 py-2 text-xs font-semibold transition ${
+                      active
+                        ? "bg-brand-gold/15 text-brand-navy"
+                        : "text-brand-navy/75 hover:bg-brand-gray/40 hover:text-brand-navy"
+                    }`}
+                    {...(external
+                      ? { target: "_blank", rel: "noopener noreferrer" }
+                      : {})}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
     </nav>
   );
 }
