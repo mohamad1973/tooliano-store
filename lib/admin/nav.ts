@@ -6,14 +6,14 @@ export type AdminNavItem = {
 };
 
 export const ADMIN_NAV: AdminNavItem[] = [
-  { href: "/admin", label: "الملخص", description: "أرقام سريعة" },
-  { href: "/admin/users", label: "المستخدمون", description: "أدمن، تاجر، مشتري، مندوب" },
-  { href: "/admin/payments", label: "المدفوعات", description: "محافظ وأرباح" },
-  { href: "/admin/operations", label: "العمليات", description: "موافقة تجار ومنتجات" },
-  { href: "/admin/delivery", label: "التسليم", description: "مندوبون وطلبات" },
+  { href: "/admin", label: "Dashboard", description: "Quick overview" },
+  { href: "/admin/users", label: "Users", description: "Admins, vendors, buyers" },
+  { href: "/admin/payments", label: "Payments", description: "Wallets and revenue" },
+  { href: "/admin/operations", label: "Operations", description: "Reviews and approvals" },
+  { href: "/admin/delivery", label: "Delivery", description: "Agents and orders" },
   {
     href: "/admin/content",
-    label: "محتوى الموقع",
-    description: "هيدر، بنرات، فوتر، حملة",
+    label: "Appearance",
+    description: "Header, banners, footer",
   },
 ];
