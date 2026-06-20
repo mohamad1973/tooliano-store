@@ -11,7 +11,7 @@ export const BANNER_IMAGE_PATHS = [
   "/banners/tools.jpg",
   "/banners/home-kitchen.jpg",
   "/banners/office.jpg",
-  "/banners/electronics.jpg",
+  "/banners/automotive.jpg",
   "/banners/automotive.jpg",
 ] as const;
 

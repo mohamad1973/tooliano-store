@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 
 type Banner = {
@@ -19,25 +18,21 @@ function PromoLink({
   banner,
   className,
   imageClassName = "",
-  priority = false,
 }: {
   banner: Banner;
   className: string;
   imageClassName?: string;
-  priority?: boolean;
 }) {
   return (
     <Link
       href={banner.href}
       className={`group relative block overflow-hidden rounded-sm bg-brand-gray shadow-sm ${className}`}
     >
-      <Image
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
         src={banner.imageUrl}
         alt={banner.altText}
-        fill
-        priority={priority}
-        className={`object-cover transition duration-300 group-hover:scale-[1.02] ${imageClassName}`}
-        sizes="(max-width: 768px) 100vw, 960px"
+        className={`absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-[1.02] ${imageClassName}`}
       />
       <span className="sr-only">{banner.label}</span>
     </Link>
@@ -54,7 +49,6 @@ export function HomeHeroPromos({ topStrip, mainBanner, sidePromos }: Props) {
           <PromoLink
             banner={topStrip}
             className="aspect-[8/1.15] min-h-[58px] w-full sm:min-h-[78px]"
-            priority
           />
         ) : null}
 
@@ -66,7 +60,6 @@ export function HomeHeroPromos({ topStrip, mainBanner, sidePromos }: Props) {
                   key={banner.id}
                   banner={banner}
                   className="aspect-[4/3] lg:aspect-[5/2.25]"
-                  priority={index === 0 && !topStrip}
                 />
               ))}
             </div>
@@ -75,7 +68,6 @@ export function HomeHeroPromos({ topStrip, mainBanner, sidePromos }: Props) {
               <PromoLink
                 banner={mainBanner}
                 className="aspect-[16/7] min-h-[180px] lg:min-h-[245px]"
-                priority={!topStrip}
               />
             ) : null}
           </div>

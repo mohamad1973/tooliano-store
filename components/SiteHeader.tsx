@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import {
   getMobileDisplaySettings,
@@ -59,11 +58,10 @@ export async function SiteHeader() {
                 className="group flex items-center gap-2 leading-tight transition hover:opacity-90"
               >
                 {settings.logoUrl ? (
-                  <Image
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
                     src={settings.logoUrl}
                     alt={settings.siteName}
-                    width={40}
-                    height={40}
                     className="h-9 w-9 rounded-lg object-contain sm:h-10 sm:w-10"
                   />
                 ) : null}
